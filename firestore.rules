@@ -1,0 +1,64 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isKitchenStaff() {
+      return isAuthenticated() &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.kitchenStaff == true;
+    }
+
+    function isGuestOrder() {
+      return request.resource.data.userId == 'guest';
+    }
+
+    // Allow test orders for unauthenticated users (for testing Phase 4)
+    function isTestOrder() {
+      // Check if userId exists and matches pattern, safe navigation
+      return request.resource.data.keys().hasAll(['userId']) && 
+             request.resource.data.userId.matches('^test-user-.*');
+    }
+
+    // Menu items - public read, kitchen staff write
+    match /menu_items/{document=**} {
+      allow read: if true;
+      allow write: if isKitchenStaff();
+    }
+
+    // Orders - authenticated users & guests create, users read own, kitchen staff read all
+    match /orders/{orderId} {
+      // Read: Owner, guest order creator, or kitchen staff
+      allow read: if isOwner(resource.data.userId)
+                    || resource.data.userId == 'guest'
+                    || isKitchenStaff();
+
+      // Create: Authenticated, guest, or test user (for Phase 4 testing)
+      allow create: if isAuthenticated()
+                       || isGuestOrder()
+                       || isTestOrder();
+
+      // Update: Kitchen staff only
+      allow update: if isKitchenStaff();
+    }
+
+    // User profiles - owners read/write own, kitchen staff can read
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isKitchenStaff();
+      allow write: if isOwner(userId); // Covers create and update
+    }
+
+    // Campus status - kitchen staff write, public read
+    match /campus_status/{document=**} {
+      allow read: if true;
+      allow write: if isKitchenStaff();
+    }
+  }
+}

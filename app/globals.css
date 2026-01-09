@@ -1,0 +1,198 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Tailwind v4 CSS directives - safely ignore "unknown at-rule" warnings */
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Ultra-Premium Obsidian Palette (Apple x Tesla) */
+  --obsidian-base: oklch(0.05 0 0);
+  --obsidian-surface: oklch(0.12 0 0);
+  --obsidian-overlay: oklch(0.18 0 0);
+
+  --pearl-white: oklch(0.98 0 0);
+  --silver-leaf: oklch(0.85 0 0);
+  --cyber-gray: oklch(0.45 0 0);
+
+  /* Brand Accents */
+  --tesla-red: oklch(0.55 0.22 25);
+  --apple-blue: oklch(0.6 0.18 250);
+
+  /* Functional Colors */
+  --background: var(--obsidian-base);
+  --foreground: var(--pearl-white);
+  --card: var(--obsidian-surface);
+  --card-foreground: var(--pearl-white);
+  --popover: var(--obsidian-surface);
+  --popover-foreground: var(--pearl-white);
+  --primary: var(--pearl-white);
+  --primary-foreground: var(--obsidian-base);
+  --secondary: var(--obsidian-overlay);
+  --secondary-foreground: var(--pearl-white);
+  --muted: var(--cyber-gray);
+  --muted-foreground: oklch(0.65 0 0);
+  --accent: oklch(0.98 0 0 / 0.1);
+  --accent-foreground: var(--pearl-white);
+  --destructive: oklch(0.55 0.22 25);
+  --destructive-foreground: var(--pearl-white);
+  --border: oklch(0.2 0 0);
+  --input: oklch(0.15 0 0);
+  --ring: oklch(0.4 0 0);
+
+  --radius: 12px;
+
+  /* Precision Motion (Spring-based feel) */
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+
+  /* Decorative Tokens */
+  --shimmer-gradient: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.05) 50%,
+      transparent 100%);
+}
+
+@theme inline {
+  --font-sans: "Geist Var", "Inter", system-ui, sans-serif;
+  --font-mono: "Geist Mono", monospace;
+
+  --color-tesla-red: var(--tesla-red);
+  --color-apple-blue: var(--apple-blue);
+  --color-obsidian-border: var(--border);
+  --color-obsidian-ring: var(--ring);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-glow: glow 2s ease-in-out infinite alternate;
+  --animate-shimmer: shimmer 2s linear infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 5px oklch(1 0 0 / 0.1);
+  }
+
+  to {
+    box-shadow: 0 0 20px oklch(1 0 0 / 0.3);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.33);
+  }
+
+  80%,
+  100% {
+    opacity: 0;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  * {
+    @apply border-obsidian-border/60 outline-obsidian-ring/30 selection:bg-white/10 selection:text-white;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-white/20;
+    font-feature-settings: "cv02", "cv03", "cv04", "ss01";
+    scroll-behavior: smooth;
+  }
+
+  /* Luxury Glassmorphism - Tesla Cybertruck vibes */
+  .glass-panel {
+    @apply bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] shadow-2xl;
+    background-image: radial-gradient(circle at top left, oklch(1 0 0 / 0.05), transparent);
+  }
+
+  .glass-card {
+    @apply bg-white/[0.02] backdrop-blur-xl border border-white/[0.06] shadow-xl hover:bg-white/[0.04] hover:border-white/20 transition-all duration-500 ease-out-expo;
+  }
+
+  /* Standardized Typography Tokens */
+  .text-heading-1 {
+    @apply text-4xl font-black tracking-tighter uppercase leading-none;
+  }
+
+  .text-heading-2 {
+    @apply text-2xl font-bold tracking-tight uppercase;
+  }
+
+  .text-label-sm {
+    @apply text-[10px] font-black tracking-[0.3em] uppercase text-white/30;
+  }
+
+  .text-label-xs {
+    @apply text-[8px] font-black tracking-widest uppercase text-white/20;
+  }
+
+  /* High-frequency depth shadows */
+  .shadow-premium {
+    box-shadow:
+      0 0 0 1px oklch(1 0 0 / 0.05),
+      0 10px 40px -10px oklch(0 0 0 / 0.5),
+      0 20px 80px -20px oklch(0 0 0 / 0.4);
+  }
+
+  /* Thin precision borders */
+  .border-thin {
+    @apply border-[0.5px] border-white/10;
+  }
+
+  /* Smooth scrollbars - Ultra minimal */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+  }
+
+  .scrollbar-none {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none !important;
+  }
+}
