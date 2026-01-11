@@ -23,14 +23,14 @@ export function InteractiveGreeting({ firstName }: InteractiveGreetingProps) {
     const baseGreeting = getGreeting()
     const hour = new Date().getHours()
     const phrases = useMemo(() => [
-        `${baseGreeting},`,
-        "System online,",
-        "Ready to fuel up?",
-        hour < 11 ? "Morning fuel requested?" : hour < 15 ? "Lunch protocol active," : "Evening modules ready,",
-        "Neural link established,",
-        "What's on the menu today?",
-        "Optimizing your experience,",
-        `Welcome back, ${firstName},`,
+        "Kitchen ready",
+        "Fresh orders coming",
+        "Chef's choice today",
+        "What's cooking",
+        "Hungry yet",
+        "Food awaits",
+        "Order up",
+        "Fuel your day",
     ], [baseGreeting, hour, firstName])
 
     useEffect(() => {
@@ -60,7 +60,7 @@ export function InteractiveGreeting({ firstName }: InteractiveGreetingProps) {
     }, [index, baseGreeting])
 
     return (
-        <div className="relative min-h-[1.2em]">
+        <div className="relative inline-block min-w-0">
             <motion.span
                 key={index}
                 initial={{ opacity: 1 }}

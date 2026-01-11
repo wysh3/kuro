@@ -14,7 +14,8 @@ import {
     ShieldCheck,
     Zap,
     Bell,
-    Activity
+    Activity,
+    LogOut
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -32,18 +33,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/hooks/use-auth'
+import { useCart } from '@/contexts/cart-context'
 import { getOrdersByUserId, convertTimestampToDate } from '@/lib/firebase/db'
 import { Order } from '@/lib/types'
 import { format } from 'date-fns'
 
 export default function CustomerProfilePage() {
     const router = useRouter()
-    const { user, userProfile, loading: authLoading } = useAuth()
+    const { user, userProfile, loading: authLoading, signOut } = useAuth()
+    const { clearCart } = useCart()
     const [orders, setOrders] = useState<Order[]>([])
     const [loading, setLoading] = useState(true)
     const [isScrolled, setIsScrolled] = useState(false)
     const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
     const [showInstallBtn, setShowInstallBtn] = useState(false)
+
+    const handleLogout = async () => {
+        localStorage.removeItem("user")
+        clearCart()
+        await signOut()
+        router.replace("/")
+    }
 
     useEffect(() => {
         const handleScroll = () => {
@@ -403,10 +413,18 @@ export default function CustomerProfilePage() {
                     <div className="flex items-center justify-between px-2">
                         <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">ORDER HISTORY</h3>
                         <div className="h-[1px] flex-1 mx-10 bg-white/5" />
-                        <Button variant="ghost" className="text-[9px] font-black text-white/20 hover:text-white uppercase tracking-widest">Clear History</Button>
+                        {orders.length > 3 && (
+                            <Button 
+                                onClick={() => router.push('/customer/orders')}
+                                variant="ghost" 
+                                className="text-[9px] font-black text-apple-blue hover:text-white uppercase tracking-widest"
+                            >
+                                View All
+                            </Button>
+                        )}
                     </div>
                     <div className="grid grid-cols-1 gap-4">
-                        {orders.slice(0, 5).map((order) => (
+                        {orders.slice(0, 3).map((order) => (
                             <motion.div
                                 key={order.id}
                                 whileHover={{ x: 10 }}
@@ -446,6 +464,31 @@ export default function CustomerProfilePage() {
                         ))}
                     </div>
                 </section>
+
+                {/* Logout Action */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                >
+                    <button
+                        onClick={handleLogout}
+                        className="w-full glass-card rounded-[2rem] p-8 border border-white/5 hover:border-red-500/20 hover:bg-red-500/5 transition-all duration-300 group shadow-premium"
+                    >
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-6">
+                                <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center group-hover:bg-red-500/20 transition-all">
+                                    <LogOut className="w-5 h-5 text-red-500" />
+                                </div>
+                                <div className="text-left">
+                                    <h3 className="text-sm font-black text-white uppercase tracking-widest">Sign Out</h3>
+                                    <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest mt-1">Securely log out of your account</p>
+                                </div>
+                            </div>
+                            <ChevronRight className="w-5 h-5 text-white/10 group-hover:text-white/50 group-hover:translate-x-1 transition-all" />
+                        </div>
+                    </button>
+                </motion.div>
             </main>
         </div>
     )

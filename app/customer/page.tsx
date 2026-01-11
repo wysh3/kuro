@@ -6,14 +6,12 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ShoppingCart, LogOut, Sparkles, Clock, TrendingUp, Search, Plus } from "lucide-react"
+import { ShoppingCart, Sparkles, Clock, TrendingUp, Search, Plus } from "lucide-react"
 import { ProductMenu } from "@/components/customer/product-menu"
 import { CrowdStatusCard } from "@/components/customer/crowd-status-card"
 import { RushWarningBanner } from "@/components/customer/rush-warning-banner"
 import { ActiveOrders } from "@/components/customer/active-orders"
 import { InteractiveGreeting } from "@/components/customer/interactive-greeting"
-import { KuroPersona } from "@/components/customer/kuro-persona"
-import { CampusBuzz } from "@/components/customer/campus-buzz"
 import { useAuth } from "@/hooks/use-auth"
 import { useCart } from "@/contexts/cart-context"
 import { motion, AnimatePresence } from "framer-motion"
@@ -60,13 +58,6 @@ export default function CustomerPage() {
       return
     }
   }, [user, loading, router, userProfile, mounted])
-
-  const handleLogout = async () => {
-    localStorage.removeItem("user")
-    clearCart()
-    await signOut()
-    router.replace("/")
-  }
 
   if (!mounted || loading) {
     return (
@@ -199,18 +190,17 @@ export default function CustomerPage() {
                 transition={{ duration: 0.5 }}
                 className="lg:col-span-7 relative"
               >
-                <div className="absolute -left-6 top-2 w-1.5 h-32 bg-apple-blue shadow-[0_0_30px_rgba(0,122,255,0.6)] rounded-full hidden sm:block" />
                 <div className="sm:pl-4">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-2 h-2 rounded-full bg-apple-blue animate-pulse" />
                     <span className="text-label-xs font-black text-white/30 uppercase tracking-[0.5em]">Campus Dining Active</span>
                   </div>
-                  <div className="mb-8 max-w-xl">
-                    <CampusBuzz />
-                  </div>
-                  <h2 className="text-6xl sm:text-8xl font-black tracking-tighter text-white uppercase leading-[0.85] mb-8">
-                    <InteractiveGreeting firstName={firstName} />
-                    <span className="text-gradient inline-block mt-2">{firstName}</span>
+
+                  <h2 className="text-6xl sm:text-8xl font-black tracking-tighter text-white uppercase leading-[0.85] mb-8 overflow-hidden">
+                    <div className="flex flex-wrap items-baseline gap-2">
+                      <InteractiveGreeting firstName={firstName} />
+                      <span className="text-gradient">{firstName}</span>
+                    </div>
                   </h2>
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-3 px-5 py-3 bg-white/[0.03] border border-white/10 rounded-2xl shadow-premium backdrop-blur-md">
@@ -227,21 +217,12 @@ export default function CustomerPage() {
                 </div>
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-                className="lg:col-span-12"
-              >
-                <KuroPersona />
-              </motion.div>
-
               {/* Status Integration */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.25 }}
-                className="lg:col-span-12"
+                className="lg:col-span-5"
               >
                 <CrowdStatusCard />
               </motion.div>
@@ -285,23 +266,7 @@ export default function CustomerPage() {
                 </div>
               </motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.5 }}
-                className="glass-card rounded-[2rem] p-8 border-white/5 shadow-premium group hover:bg-white/[0.03] transition-all lg:col-span-1 md:col-span-2 lg:hidden xl:block"
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-tesla-red/10 flex items-center justify-center">
-                    <LogOut className="w-5 h-5 text-tesla-red" />
-                  </div>
-                  <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">ACCOUNT</h4>
-                </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest max-w-[140px]">Sign out of your account</p>
-                  <Button onClick={handleLogout} variant="ghost" className="h-10 px-4 rounded-xl bg-tesla-red/5 hover:bg-tesla-red border border-tesla-red/20 text-tesla-red hover:text-white transition-all text-[9px] font-black tracking-widest">LOGOUT</Button>
-                </div>
-              </motion.div>
+
             </div>
 
             {/* Intelligence Layer */}
