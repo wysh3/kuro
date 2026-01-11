@@ -106,19 +106,19 @@ export default function LoginPage() {
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             whileHover={{ scale: 1.05 }}
-            className="relative inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-white shadow-premium mx-auto overflow-hidden p-2"
+            className="relative inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-white shadow-premium mx-auto overflow-hidden"
           >
             <Image
               src="/logo.png"
               alt="KURO Logo"
               fill
-              className="object-contain"
+              className="object-cover scale-150"
               priority
             />
           </motion.div>
           <div className="space-y-4">
-            <h1 className="text-6xl font-black tracking-tighter text-white uppercase leading-none">
-              PROJECT <span className="text-gradient">KURO.</span>
+            <h1 className="text-7xl font-black tracking-tighter text-white uppercase leading-none">
+              <span className="text-gradient">KURO.</span>
             </h1>
             <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">High Performance Ops</p>
           </div>

@@ -104,13 +104,13 @@ export default function CustomerPage() {
               className="flex items-center gap-2 cursor-pointer"
               onClick={() => router.push('/customer')}
             >
-              <div className="w-9 h-9 rounded-xl bg-white shadow-premium flex items-center justify-center p-1.5">
+              <div className="w-9 h-9 rounded-xl bg-white shadow-premium flex items-center justify-center overflow-hidden">
                 <Image
                   src="/logo.png"
                   alt="KURO Logo"
-                  width={24}
-                  height={24}
-                  className="object-contain"
+                  width={36}
+                  height={36}
+                  className="object-cover scale-100"
                 />
               </div>
               <span className="text-label-sm font-black text-white/90 hidden sm:block tracking-widest">KURO.</span>
