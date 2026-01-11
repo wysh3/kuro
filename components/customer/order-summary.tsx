@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { ArrowLeft, Trash2, AlertCircle, Sparkles, ShieldCheck } from 'lucide-react'
 import { createOrder } from '@/lib/firebase/db'
+import { requestNotificationPermission } from '@/lib/firebase/messaging'
 import { useAuth } from '@/hooks/use-auth'
 import { RazorpayCheckout } from '@/components/customer/razorpay-checkout'
 import { RazorpayPaymentResponse } from '@/lib/razorpay/types'
@@ -84,9 +85,9 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
         pickupSlot: selectedSlot?.displayTime || 'ASAP',
         discountApplied: discountAmount
       })
-      // Clear cart after successful order
+
       clearCart()
-      router.push(`/customer/order/${orderId}`)
+      router.push(`/customer/order/${orderId}?justPlaced=true`)
     } catch (err) {
       setError('Order creation failed. Please contact support.')
       setCreatingOrder(false)

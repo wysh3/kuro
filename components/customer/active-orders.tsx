@@ -6,7 +6,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Clock, CheckCircle2, ChevronRight, ShoppingBag, Sparkles } from 'lucide-react'
 import { Order } from '@/lib/types'
 import { subscribeToUserActiveOrders } from '@/lib/firebase/db'
-import { requestNotificationPermission } from '@/lib/firebase/messaging'
 import { useAuth } from '@/hooks/use-auth'
 import { cn } from '@/lib/utils'
 
@@ -29,11 +28,6 @@ export function ActiveOrders() {
             (activeOrders) => {
                 setOrders(activeOrders)
                 setLoading(false)
-
-                // Request notification permission when there are active orders
-                if (activeOrders.length > 0) {
-                    requestNotificationPermission(user.uid)
-                }
             },
             (error) => {
                 console.error('Active orders error:', error)
