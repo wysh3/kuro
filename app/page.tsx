@@ -110,7 +110,7 @@ export default function LoginPage() {
           >
             <Image
               src="/logo.png"
-              alt="MRC Flow Logo"
+              alt="KURO Logo"
               fill
               className="object-contain"
               priority
