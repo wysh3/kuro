@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -103,10 +104,16 @@ export default function CustomerPage() {
               className="flex items-center gap-2 cursor-pointer"
               onClick={() => router.push('/customer')}
             >
-              <div className="w-9 h-9 rounded-xl bg-white shadow-premium flex items-center justify-center">
-                <span className="font-black text-black text-xs">M</span>
+              <div className="w-9 h-9 rounded-xl bg-white shadow-premium flex items-center justify-center p-1.5">
+                <Image
+                  src="/logo.png"
+                  alt="KURO Logo"
+                  width={24}
+                  height={24}
+                  className="object-contain"
+                />
               </div>
-              <span className="text-label-sm font-black text-white/90 hidden sm:block tracking-widest">FLOW.</span>
+              <span className="text-label-sm font-black text-white/90 hidden sm:block tracking-widest">KURO.</span>
             </motion.div>
           </div>
 
