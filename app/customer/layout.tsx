@@ -19,15 +19,14 @@ export default function CustomerLayout({
 
     React.useEffect(() => {
         setMounted(true)
+        console.log('🎨 CustomerLayout mounted')
     }, [])
 
     const itemCount = cart.reduce((acc, item) => acc + item.quantity, 0)
 
     // Don't show floating cart/nav on specific pages to avoid clutter
     const isMissionPage = pathname.includes('/order/') || pathname.includes('/meal-planner')
-    const showNav = !isMissionPage
-
-    if (!mounted) return null
+    const showNav = !isMissionPage && mounted
 
     return (
         <div className="relative min-h-screen">

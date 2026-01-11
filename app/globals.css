@@ -132,6 +132,12 @@ html {
     @apply bg-background text-foreground antialiased selection:bg-white/20;
     font-feature-settings: "cv02", "cv03", "cv04", "ss01";
     scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+
+  body, html {
+    visibility: visible !important;
+    opacity: 1 !important;
   }
 
   /* Luxury Glassmorphism - Tesla Cybertruck vibes */

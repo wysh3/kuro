@@ -21,10 +21,15 @@ export default function CustomerPage() {
   const { cart, addToCart, removeFromCart, cartTotal, clearCart } = useCart()
   const [showOrder, setShowOrder] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
+    console.log('📱 CustomerPage mounted')
     window.scrollTo(0, 0)
+  }, [])
 
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20)
     }
@@ -34,33 +39,28 @@ export default function CustomerPage() {
     }
   }, [])
 
-  // Force scroll to top when loading state transitions to false
-  useEffect(() => {
-    if (!loading) {
-      window.scrollTo(0, 0)
-      const timer = setTimeout(() => window.scrollTo(0, 0), 0)
-      return () => clearTimeout(timer)
-    }
-  }, [loading])
+  // Removed redundant scroll to top effect that was causing jumps on state changes
 
   useEffect(() => {
+    console.log('🔐 Auth state:', { loading, user: !!user, userProfile: !!userProfile, mounted })
     const userData = localStorage.getItem("user")
     if (!loading && !user && !userData) {
-      router.push("/")
+      console.log('🔄 Redirecting to home - not authenticated')
+      router.replace("/")
       return
     }
-  }, [user, loading, router])
+  }, [user, loading, router, userProfile, mounted])
 
   const handleLogout = async () => {
     localStorage.removeItem("user")
     clearCart()
     await signOut()
-    router.push("/")
+    router.replace("/")
   }
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
-      <div className="fixed inset-0 bg-black z-[100] flex items-center justify-center">
+      <div className="fixed inset-0 bg-background z-[100] flex items-center justify-center">
         <motion.div
           animate={{ scale: [1, 1.1, 1], rotate: [0, 90, 0] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}

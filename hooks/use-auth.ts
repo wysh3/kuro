@@ -32,6 +32,7 @@ export function useAuth(): UseAuthReturn {
     const setupAuthListener = async () => {
       try {
         unsubscribe = onAuthStateChange(async (authUser) => {
+          console.log('🔑 Auth state changed:', { user: !!authUser, email: authUser?.email })
           setUser(authUser)
           setLoading(true)
           setError(null)
@@ -39,6 +40,7 @@ export function useAuth(): UseAuthReturn {
           if (authUser) {
             try {
               let profile = await getUserProfile(authUser.uid)
+              console.log('👤 Profile loaded:', !!profile)
               setUserProfile(profile)
             } catch (err) {
               console.log('📝 Creating new user profile for:', authUser.uid)
@@ -59,6 +61,7 @@ export function useAuth(): UseAuthReturn {
           }
 
           setLoading(false)
+          console.log('✅ Auth state finalized:', { loading: false, user: !!authUser })
         })
       } catch (err) {
         console.error('❌ Error setting up auth listener:', err)

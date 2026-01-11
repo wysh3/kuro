@@ -8,7 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Plus, AlertCircle, TrendingUp, Clock } from 'lucide-react'
 import { MenuItem } from '@/lib/types'
 import { subscribeToMenuItems } from '@/lib/firebase/db'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { ProductDetailDialog } from './product-detail-dialog'
 import { cn } from '@/lib/utils'
 
@@ -65,13 +65,6 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
   const filteredProducts = selectedCategory
     ? products.filter((p) => p.category === selectedCategory)
     : products
-
-  // Smooth scroll to top of menu when category changes
-  useEffect(() => {
-    if (selectedCategory !== undefined) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [selectedCategory])
 
   if (loading) {
     return (
@@ -150,27 +143,21 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
 
       {/* Products Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <AnimatePresence mode="popLayout">
-          {filteredProducts.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-32 border border-dashed border-white/5 rounded-3xl"
-            >
-              <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em]">No modules available in this cluster</p>
-            </motion.div>
-          ) : (
-            <motion.div
-              layout
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-            >
+        {filteredProducts.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-32 border border-dashed border-white/5 rounded-3xl"
+          >
+            <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em]">No modules available in this cluster</p>
+          </motion.div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProducts.map((product, index) => (
                 <motion.div
                   key={product.id}
-                  layout
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
                   transition={{
                     type: "spring",
                     stiffness: 300,
@@ -198,7 +185,7 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
                       ) : (
                         <div className="w-full h-full bg-white/5 animate-pulse" />
                       )}
-
+ 
                       {/* Floating Badge */}
                       <div className="absolute top-4 left-4 flex gap-2">
                         {product.available ? (
@@ -211,11 +198,11 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
                           </div>
                         )}
                       </div>
-
+ 
                       {/* Overlays */}
                       <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-60" />
                     </div>
-
+ 
                     <CardContent className="p-6 flex-1 flex flex-col justify-between">
                       <div className="space-y-4">
                         <div className="flex justify-between items-start">
@@ -223,11 +210,11 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
                             {product.name}
                           </h3>
                         </div>
-
+ 
                         <p className="text-white/40 text-xs font-medium line-clamp-2 leading-relaxed">
                           {product.description}
                         </p>
-
+ 
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             <Clock className="w-3.5 h-3.5 text-white/20" />
@@ -240,13 +227,13 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
                           </div>
                         </div>
                       </div>
-
+ 
                       <div className="mt-8 flex items-center justify-between">
                         <div className="flex flex-col">
                           <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">Price Module</span>
                           <span className="text-3xl font-black text-white tracking-tighter">₹{product.price}</span>
                         </div>
-
+ 
                         <Button
                           onClick={(e) => {
                             e.stopPropagation()
@@ -268,9 +255,8 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
                   </Card>
                 </motion.div>
               ))}
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
       </div>
 
       <ProductDetailDialog

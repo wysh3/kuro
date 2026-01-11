@@ -30,7 +30,7 @@ export default function KitchenPage() {
 
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/')
+      router.replace('/')
     }
   }, [user, authLoading, router])
 
@@ -50,7 +50,7 @@ export default function KitchenPage() {
   const handleLogout = async () => {
     localStorage.removeItem('user')
     await signOut()
-    router.push('/')
+    router.replace('/')
   }
 
   const handleUpdateStatus = async (orderId: string, newStatus: Order['status']) => {

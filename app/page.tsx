@@ -20,10 +20,23 @@ export default function LoginPage() {
   }, [])
 
   useEffect(() => {
-    if (!loading && user && userProfile) {
-      router.push("/customer")
+    const guestUser = localStorage.getItem("user")
+    console.log('🏠 Login page - Auth state:', { loading, user: !!user, userProfile: !!userProfile, guestUser: !!guestUser, mounted })
+
+    // Check for Firebase user
+    if (mounted && !loading && user && userProfile) {
+      console.log('🚀 Redirecting to customer page (Firebase)')
+      router.replace("/customer")
+      return
     }
-  }, [user, userProfile, loading, router])
+
+    // Check for Guest user
+    if (mounted && !loading && !user && guestUser) {
+      console.log('🚀 Redirecting to customer page (Guest)')
+      router.replace("/customer")
+      return
+    }
+  }, [user, userProfile, loading, router, mounted])
 
   const handleGoogleLogin = async () => {
     setAuthLoading("google")
@@ -41,14 +54,14 @@ export default function LoginPage() {
     setAuthLoading("guest")
     try {
       const guestId = "guest_" + Math.random().toString(36).substr(2, 9)
-      const user = {
+      const guestUser = {
         id: guestId,
         email: null,
         name: "Guest",
         type: "guest",
       }
-      localStorage.setItem("user", JSON.stringify(user))
-      router.push("/customer")
+      localStorage.setItem("user", JSON.stringify(guestUser))
+      router.replace("/customer")
     } catch (error) {
       console.error("Guest login failed:", error)
     } finally {
@@ -64,7 +77,19 @@ export default function LoginPage() {
     router.push("/kitchen")
   }
 
-  if (!mounted) return null
+  const isRedirecting = (user && userProfile) || (typeof window !== 'undefined' && localStorage.getItem("user"))
+
+  if (!mounted || loading || isRedirecting) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-black">
+        <motion.div
+          animate={{ scale: [1, 1.1, 1], rotate: [0, 90, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen w-full flex flex-col items-center justify-center bg-black p-6 selection:bg-white/10 relative overflow-hidden">
