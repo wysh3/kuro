@@ -23,28 +23,26 @@ interface CartDrawerProps {
     onClose?: () => void
 }
 
-export function CartDrawer({ trigger, isOpen, onClose }: CartDrawerProps) {
-    const { cart, cartTotal, removeFromCart } = useCart()
+export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
+    const { cart, cartTotal, removeFromCart, isDrawerOpen, setIsDrawerOpen } = useCart()
     const { user } = useAuth()
     const [showOrder, setShowOrder] = useState(false)
-    const [internalOpen, setInternalOpen] = useState(false)
 
-    const isSheetOpen = isOpen !== undefined ? isOpen : internalOpen
-    const setIsSheetOpen = (val: boolean) => {
-        if (onClose && !val) onClose()
-        setInternalOpen(val)
-        if (!val) setShowOrder(false) // Reset view on close
+    const isSheetOpen = isOpen !== undefined ? isOpen : isDrawerOpen
+    const handleOpenChange = (open: boolean) => {
+        setIsDrawerOpen(open)
+        if (onClose && !open) onClose()
+        if (!open) setShowOrder(false)
     }
 
     const itemCount = cart.reduce((acc, item) => acc + item.quantity, 0)
 
     return (
-        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen} modal={false}>
-            {trigger && <SheetTrigger asChild>{trigger}</SheetTrigger>}
+        <Sheet open={isSheetOpen} onOpenChange={handleOpenChange}>
 
             <SheetContent
                 side="right"
-                className="w-full sm:max-w-md bg-black/80 backdrop-blur-3xl border-l border-white/10 p-0 overflow-hidden flex flex-col shadow-premium"
+                className="w-full sm:max-w-lg bg-black/95 backdrop-blur-3xl border-l border-white/10 p-0 overflow-hidden flex flex-col shadow-premium"
             >
                 {/* Apple-style top glow */}
                 <div className="absolute inset-x-0 top-0 h-[1px] bg-linear-to-r from-transparent via-white/20 to-transparent" />
@@ -62,7 +60,7 @@ export function CartDrawer({ trigger, isOpen, onClose }: CartDrawerProps) {
                                 <SheetHeader className="p-0 border-none space-y-2">
                                     <div className="flex items-center gap-3 text-white/40 text-[10px] font-black uppercase tracking-[0.4em]">
                                         <div className="w-1.5 h-1.5 rounded-full bg-apple-blue animate-pulse" />
-                                        Mission Payload
+                                        Shopping Cart
                                     </div>
                                     <SheetTitle className="text-4xl font-black text-white tracking-tighter uppercase leading-none">
                                         Your Cart
@@ -79,8 +77,8 @@ export function CartDrawer({ trigger, isOpen, onClose }: CartDrawerProps) {
                                             <ShoppingBag className="w-10 h-10 text-white/10 relative z-10" />
                                         </div>
                                         <div className="space-y-3">
-                                            <p className="text-sm font-black text-white/40 uppercase tracking-[0.2em]">Payload is Empty</p>
-                                            <p className="text-[10px] text-white/20 font-black uppercase tracking-widest max-w-[200px] leading-relaxed">System awaiting hardware selection from main menu</p>
+                                            <p className="text-sm font-black text-white/40 uppercase tracking-[0.2em]">Cart is Empty</p>
+                                            <p className="text-[10px] text-white/20 font-black uppercase tracking-widest max-w-[200px] leading-relaxed">Browse our menu to add items to your cart</p>
                                         </div>
                                     </div>
                                 ) : (
@@ -114,8 +112,8 @@ export function CartDrawer({ trigger, isOpen, onClose }: CartDrawerProps) {
                                         <div className="pt-8 border-t border-white/5">
                                             <div className="flex justify-between items-end">
                                                 <div className="space-y-1">
-                                                    <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Payload Total</span>
-                                                    <p className="text-[9px] font-black text-white/10 uppercase tracking-widest">Excl. Operational Fees</p>
+                                                    <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Subtotal</span>
+                                                    <p className="text-[9px] font-black text-white/10 uppercase tracking-widest">Excl. Fees</p>
                                                 </div>
                                                 <span className="text-5xl font-black text-white tracking-tighter text-gradient leading-none">₹{cartTotal}</span>
                                             </div>
@@ -145,7 +143,7 @@ export function CartDrawer({ trigger, isOpen, onClose }: CartDrawerProps) {
                 </div>
 
                 {cart.length > 0 && !showOrder && (
-                    <div className="p-8 bg-black/40 backdrop-blur-xl border-t border-white/10">
+                    <div className="p-8 pb-12 bg-black/40 backdrop-blur-xl border-t border-white/10">
                         <Button
                             onClick={() => setShowOrder(true)}
                             className="w-full h-16 bg-white text-black hover:bg-white/90 rounded-[1.5rem] text-xs font-black uppercase tracking-[0.3em] shadow-premium active:scale-95 transition-all group border-none"

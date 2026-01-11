@@ -271,6 +271,56 @@ export async function getOrdersByUserId(userId: string): Promise<Order[]> {
   }
 }
 
+export function subscribeToUserActiveOrders(
+  userId: string,
+  callback: (orders: Order[]) => void,
+  onError?: (error: FirestoreError) => void
+): Unsubscribe {
+  try {
+    const db = getFirebaseDB()
+    const ordersRef = collection(db, 'orders')
+    // Get all orders for user and filter/sort in memory to avoid index requirements
+    const q = query(
+      ordersRef,
+      where('userId', '==', userId)
+    )
+
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot: QuerySnapshot<DocumentData>) => {
+        const orders: Order[] = []
+        snapshot.forEach((doc) => {
+          const data = doc.data()
+          if (data.status !== 'completed') {
+            orders.push({ ...data, id: doc.id } as Order)
+          }
+        })
+        
+        // Sort in-memory to avoid requiring a composite index in Firestore
+        orders.sort((a, b) => {
+          const timeA = a.createdAt instanceof Timestamp ? a.createdAt.toMillis() : 0
+          const timeB = b.createdAt instanceof Timestamp ? b.createdAt.toMillis() : 0
+          return timeB - timeA // Descending (newest first)
+        });
+        
+        callback(orders)
+      },
+      (error) => {
+        console.error('Error listening to user active orders:', error)
+        const firestoreError = new FirestoreError('Real-time updates unavailable.', 'user-orders-listen-error', error)
+        onError?.(firestoreError)
+      }
+    )
+
+    return unsubscribe
+  } catch (error) {
+    console.error('Error setting up user orders listener:', error)
+    const firestoreError = new FirestoreError('Failed to set up real-time updates.', 'user-orders-setup-error', error)
+    onError?.(firestoreError)
+    return () => { }
+  }
+}
+
 export function subscribeToOrders(
   callback: (orders: Order[]) => void,
   onError?: (error: FirestoreError) => void

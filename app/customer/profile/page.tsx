@@ -97,7 +97,7 @@ export default function CustomerProfilePage() {
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="animate-pulse flex flex-col items-center gap-4">
                     <div className="w-12 h-12 bg-primary/20 rounded-full" />
-                    <p className="text-sm text-muted-foreground">Calculating your savings...</p>
+                    <p className="text-sm text-muted-foreground">Fetching your profile data...</p>
                 </div>
             </div>
         )
@@ -158,15 +158,15 @@ export default function CustomerProfilePage() {
                             <ArrowLeft className="w-5 h-5 text-white/40" />
                         </Button>
                         <div>
-                            <h1 className="text-[10px] font-black tracking-[0.4em] uppercase leading-none text-white/40">ANALYTICS COMMAND</h1>
-                            <p className="text-xs font-black text-white mt-1 uppercase tracking-widest">Performance Protocol</p>
+                            <h1 className="text-[10px] font-black tracking-[0.4em] uppercase leading-none text-white/40">USER PROFILE</h1>
+                            <p className="text-xs font-black text-white mt-1 uppercase tracking-widest">Account Details</p>
                         </div>
                     </div>
 
                     <div className="flex items-center gap-4">
                         <div className="hidden sm:flex flex-col items-end mr-2">
                             <p className="text-[10px] font-black text-white leading-none mb-1 uppercase tracking-widest">{user.displayName?.split(' ')[0]}</p>
-                            <p className="text-[8px] font-black text-apple-blue uppercase tracking-[0.2em] animate-pulse">Neural Link Active</p>
+                            <p className="text-[8px] font-black text-apple-blue uppercase tracking-[0.2em]">System Online</p>
                         </div>
                         <Avatar className="w-10 h-10 border border-white/10 shadow-premium">
                             <AvatarImage src={user.photoURL || ''} />
@@ -200,22 +200,22 @@ export default function CustomerProfilePage() {
 
                         <div className="flex-1 text-center md:text-left space-y-6 relative z-10">
                             <div className="space-y-2">
-                                <h2 className="text-5xl sm:text-6xl font-black tracking-tighter text-white uppercase leading-none">{user.displayName || 'GUEST OPERATOR'}</h2>
+                                <h2 className="text-5xl sm:text-6xl font-black tracking-tighter text-white uppercase leading-none">{user.displayName || 'GUEST USER'}</h2>
                                 <p className="text-xs font-black text-white/20 uppercase tracking-[0.4em]">{user.email}</p>
                             </div>
                             <div className="flex flex-wrap justify-center md:justify-start gap-4">
                                 <div className="px-6 py-2 rounded-xl bg-white text-black text-[10px] font-black uppercase tracking-widest shadow-premium">
-                                    PREMIUM ACCESS
+                                    VERIFIED ACCOUNT
                                 </div>
                                 <div className="px-6 py-2 rounded-xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-white/40">
-                                    ESTD. {format(new Date(user.metadata.creationTime || Date.now()), 'yyyy')}
+                                    JOINED {format(new Date(user.metadata.creationTime || Date.now()), 'yyyy')}
                                 </div>
                             </div>
                         </div>
 
                         <div className="flex flex-col items-center md:items-end gap-2 px-10 md:border-l border-white/5 relative z-10">
-                            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">Operational Grade</span>
-                            <span className="text-4xl font-black text-apple-blue tracking-tighter italic text-shadow-glow">ELITE OPS</span>
+                            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em]">User Level</span>
+                            <span className="text-4xl font-black text-apple-blue tracking-tighter italic text-shadow-glow">STAR DINER</span>
                         </div>
                     </div>
                 </motion.section>
@@ -228,32 +228,32 @@ export default function CustomerProfilePage() {
                     className="grid grid-cols-2 lg:grid-cols-4 gap-6"
                 >
                     <MetricCard
-                        title="Operational Export"
+                        title="Total Spending"
                         value={`₹${totalSpent.toLocaleString()}`}
                         icon={<Wallet className="w-5 h-5" />}
                         accent="text-white"
-                        desc="Total sorted output"
+                        desc="Lifetime expenditure"
                     />
                     <MetricCard
-                        title="Protocol Savings"
+                        title="Smart Savings"
                         value={`₹${totalSaved.toLocaleString()}`}
                         icon={<TrendingUp className="w-5 h-5" />}
                         accent="text-green-500"
-                        desc="Optimization delta"
+                        desc="Discount gains"
                     />
                     <MetricCard
-                        title="Sorties Completed"
+                        title="Orders Placed"
                         value={orderCount.toString()}
                         icon={<ShoppingBag className="w-5 h-5" />}
                         accent="text-apple-blue"
-                        desc="Mission count"
+                        desc="Total orders"
                     />
                     <MetricCard
-                        title="Time Efficiency"
+                        title="Time Saved"
                         value={`${timeSavedHours}h ${timeSavedRemMinutes}m`}
                         icon={<Clock className="w-5 h-5" />}
                         accent="text-tesla-red"
-                        desc="Latent time reclaimed"
+                        desc="Time saved in queue"
                     />
                 </motion.section>
 
@@ -263,10 +263,10 @@ export default function CustomerProfilePage() {
                         <div className="p-8 border-b border-white/[0.04] bg-white/[0.01] flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <Activity className="w-5 h-5 text-white/20" />
-                                <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">PAYLOAD TELEMETRY</h3>
+                                <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">SPENDING HISTORY</h3>
                             </div>
                             <div className="px-3 py-1 rounded-lg bg-white/5 border border-white/5 text-[8px] font-black text-white/20 uppercase tracking-widest">
-                                LAST 7 CYCLES
+                                LAST 7 DAYS
                             </div>
                         </div>
                         <div className="h-[350px] w-full p-10 pt-4">
@@ -325,19 +325,19 @@ export default function CustomerProfilePage() {
                             ) : (
                                 <div className="h-full flex flex-col items-center justify-center space-y-4 opacity-20">
                                     <Activity className="w-10 h-10" />
-                                    <p className="text-[10px] font-black uppercase tracking-[0.4em]">Signal Flatlined: No Activity</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em]">No activity found</p>
                                 </div>
                             )}
                         </div>
                     </div>
 
                     <div className="lg:col-span-4 space-y-10">
-                        {/* Favorite Payloads */}
+                        {/* Favorite Orders */}
                         <div className="glass-panel border-white/5 rounded-[2.5rem] shadow-premium overflow-hidden flex flex-col">
                             <div className="p-8 border-b border-white/[0.04] bg-white/[0.01]">
                                 <div className="flex items-center gap-4">
                                     <Heart className="w-5 h-5 text-tesla-red" />
-                                    <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">PRIORITY GEAR</h3>
+                                    <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">TOP PICKS</h3>
                                 </div>
                             </div>
                             <div className="p-10 space-y-8">
@@ -361,7 +361,7 @@ export default function CustomerProfilePage() {
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="text-[10px] font-black text-white/10 uppercase tracking-widest text-center py-10 italic">Neural cache cleared</p>
+                                    <p className="text-[10px] font-black text-white/10 uppercase tracking-widest text-center py-10 italic">No data available</p>
                                 )}
                             </div>
                         </div>
@@ -379,16 +379,16 @@ export default function CustomerProfilePage() {
                                     <div className="relative z-10 space-y-6">
                                         <div className="flex items-center gap-4">
                                             <Zap className="w-6 h-6 text-white shadow-glow" />
-                                            <h3 className="text-[10px] font-black text-white uppercase tracking-[0.4em]">DEPLOY NATIVE</h3>
+                                            <h3 className="text-[10px] font-black text-white uppercase tracking-[0.4em]">GET THE APP</h3>
                                         </div>
                                         <p className="text-[11px] font-medium text-white/40 uppercase tracking-widest leading-relaxed">
-                                            Integrate KURO directly into your hardware kernel for zero-latency access.
+                                            Install KURO on your home screen for instant access.
                                         </p>
                                         <Button
                                             onClick={handleInstall}
                                             className="w-full h-14 bg-white text-black hover:bg-white/90 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-premium active:scale-95 transition-all border-none"
                                         >
-                                            INITIATE INSTALL
+                                            INSTALL NOW
                                         </Button>
                                     </div>
                                     <div className="absolute -bottom-20 -right-20 w-48 h-48 bg-apple-blue/30 blur-[80px] rounded-full" />
@@ -401,9 +401,9 @@ export default function CustomerProfilePage() {
                 {/* Recent Deployment List */}
                 <section className="space-y-8">
                     <div className="flex items-center justify-between px-2">
-                        <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">SORTIE LOGS</h3>
+                        <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">ORDER HISTORY</h3>
                         <div className="h-[1px] flex-1 mx-10 bg-white/5" />
-                        <Button variant="ghost" className="text-[9px] font-black text-white/20 hover:text-white uppercase tracking-widest">Wipe Cache</Button>
+                        <Button variant="ghost" className="text-[9px] font-black text-white/20 hover:text-white uppercase tracking-widest">Clear History</Button>
                     </div>
                     <div className="grid grid-cols-1 gap-4">
                         {orders.slice(0, 5).map((order) => (
@@ -435,7 +435,7 @@ export default function CustomerProfilePage() {
                                             "text-[9px] font-black uppercase tracking-widest",
                                             order.status === 'ready' ? 'text-green-500' : 'text-white/30'
                                         )}>
-                                            {order.status.replace('_', ' ')}
+                                            {order.status.replace('_', ' ').toUpperCase()}
                                         </p>
                                     </div>
                                     <div className="w-10 h-10 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-center group-hover:border-white/20 group-hover:bg-white/5 transition-all">

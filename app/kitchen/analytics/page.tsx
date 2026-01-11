@@ -78,11 +78,11 @@ export default function KitchenAnalyticsPage() {
         return (
             <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-6">
                 <motion.div
-                    animate={{ scale: [1, 1.1, 1], rotate: [0, 90, 0] }}
+                    animate={{ scale: [1, 1.1, 1] }}
                     transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                     className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full"
                 />
-                <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Processing Strategic Data</p>
+                <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Generating Business Insights</p>
             </div>
         )
     }
@@ -159,8 +159,8 @@ export default function KitchenAnalyticsPage() {
                                 <BarChart3 className="w-6 h-6 text-black group-hover:scale-110 transition-transform" />
                             </div>
                             <div className="hidden sm:block">
-                                <h1 className="text-[11px] font-black tracking-[0.4em] uppercase leading-none text-white/90">BI COMMAND</h1>
-                                <p className="text-[9px] font-bold text-white/30 mt-1.5 uppercase tracking-widest">INTELLIGENCE PROTOCOL</p>
+                                <h1 className="text-[11px] font-black tracking-[0.4em] uppercase leading-none text-white/90">ANALYTICS DASHBOARD</h1>
+                                <p className="text-[9px] font-bold text-white/30 mt-1.5 uppercase tracking-widest">DATA INSIGHTS</p>
                             </div>
                         </div>
                     </div>
@@ -190,23 +190,23 @@ export default function KitchenAnalyticsPage() {
                         glowColor="bg-white/10"
                     />
                     <MetricCard
-                        title="Deployment Ratio"
+                        title="Fulfillment Rate"
                         value={`${completedToday}/${totalToday}`}
                         icon={<ShoppingBag className="w-4 h-4" />}
-                        subValue="Units Complete"
+                        subValue="Finished Orders"
                         accent="text-apple-blue"
                         glowColor="bg-apple-blue/10"
                     />
                     <MetricCard
-                        title="Avg Prep Latency"
+                        title="Avg Prep Time"
                         value={`${Math.round(avgPrepTime)}m`}
                         icon={<Clock className="w-4 h-4" />}
-                        subValue="System Speed"
+                        subValue="Service Speed"
                         accent="text-purple-400"
                         glowColor="bg-purple-400/10"
                     />
                     <MetricCard
-                        title="Operational Load"
+                        title="Kitchen Load"
                         value="85%"
                         icon={<Activity className="w-4 h-4" />}
                         subValue="Current Capacity"
@@ -221,7 +221,7 @@ export default function KitchenAnalyticsPage() {
                         <CardHeader className="p-8 pb-0 flex flex-row items-center justify-between border-b border-white/5">
                             <div className="space-y-1">
                                 <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">Traffic Analysis</span>
-                                <CardTitle className="text-xl font-black italic tracking-tighter uppercase text-white">Hourly Deployment Volume</CardTitle>
+                                <CardTitle className="text-xl font-black italic tracking-tighter uppercase text-white">Hourly Order Volume</CardTitle>
                             </div>
                             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                                 <Activity className="w-5 h-5 text-apple-blue" />
@@ -279,8 +279,8 @@ export default function KitchenAnalyticsPage() {
                     <Card className="glass-panel border-white/5 rounded-[2.5rem] overflow-hidden shadow-premium">
                         <CardHeader className="p-8 pb-0 flex flex-row items-center justify-between border-b border-white/5">
                             <div className="space-y-1">
-                                <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">Extraction Data</span>
-                                <CardTitle className="text-xl font-black italic tracking-tighter uppercase text-white">Top Tactical Units</CardTitle>
+                                <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">Sales Data</span>
+                                <CardTitle className="text-xl font-black italic tracking-tighter uppercase text-white">Most Popular Items</CardTitle>
                             </div>
                             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                                 <Target className="w-5 h-5 text-tesla-red" />
@@ -333,7 +333,7 @@ export default function KitchenAnalyticsPage() {
                             ) : (
                                 <div className="h-full flex flex-col items-center justify-center gap-4 text-white/10">
                                     <Target className="w-12 h-12" />
-                                    <p className="text-[10px] font-black uppercase tracking-[0.4em]">No Extraction Data</p>
+                                    <p className="text-[10px] font-black uppercase tracking-[0.4em]">No Sales Data</p>
                                 </div>
                             )}
                         </CardContent>
@@ -354,14 +354,14 @@ export default function KitchenAnalyticsPage() {
                             <div className="space-y-1">
                                 <p className="text-[12px] font-black text-tesla-red uppercase tracking-[0.2em]">Efficiency Threshold Breached</p>
                                 <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest leading-relaxed max-w-2xl">
-                                    System latency is currently at {Math.round(avgPrepTime)} minutes. Deploy high-capacity protocols or enable manual overrides to maintain tactical advantage.
+                                    Service latency is currently at {Math.round(avgPrepTime)} minutes. Deploy efficiency protocols or enable manual overrides to maintain service advantage.
                                 </p>
                             </div>
                             <Button
                                 onClick={() => router.push('/kitchen')}
                                 className="ml-auto h-12 px-6 rounded-2xl bg-tesla-red text-white text-[9px] font-black uppercase tracking-widest hover:bg-tesla-red/80 transition-all shadow-premium"
                             >
-                                MISSION CONTROL
+                                KITCHEN CONSOLE
                             </Button>
                         </motion.section>
                     )}

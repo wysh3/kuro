@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ArrowLeft, Trash2, AlertCircle, Loader2, Sparkles, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, Trash2, AlertCircle, Sparkles, ShieldCheck } from 'lucide-react'
 import { createOrder } from '@/lib/firebase/db'
 import { useAuth } from '@/hooks/use-auth'
 import { RazorpayCheckout } from '@/components/customer/razorpay-checkout'
@@ -15,6 +15,7 @@ import { TimeSlotSelector } from '@/components/customer/time-slot-selector'
 import { useCart } from '@/contexts/cart-context'
 import { cn } from '@/lib/utils'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Spinner } from '@/components/ui/spinner'
 
 interface CartItem {
   id: string
@@ -111,14 +112,14 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
   }, [subtotal, cart.length, onBack])
 
   const content = (
-    <div className="space-y-10">
+    <div className="space-y-10 pb-12">
       <div className="flex items-center gap-5 border-b border-white/5 pb-8">
         <Button onClick={onBack} variant="ghost" size="icon" className="w-10 h-10 hover:bg-white/5 rounded-xl border border-white/5">
           <ArrowLeft className="w-5 h-5 text-white/40" />
         </Button>
         <div>
-          <h1 className="text-sm font-black tracking-[0.3em] uppercase leading-none text-white/90">CHECKOUT PROTOCOL</h1>
-          <p className="text-[10px] font-bold text-white/20 mt-1.5 uppercase tracking-widest">Review & Confirm Sortie</p>
+          <h1 className="text-sm font-black tracking-[0.3em] uppercase leading-none text-white/90">ORDER SUMMARY</h1>
+          <p className="text-[10px] font-bold text-white/20 mt-1.5 uppercase tracking-widest">Review & Confirm Order</p>
         </div>
       </div>
 
@@ -164,7 +165,7 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
         <div className="pt-8 border-t border-white/5 space-y-6">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Deployment Time</p>
+              <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Pickup Time</p>
               <p className="text-xs font-black uppercase tracking-widest text-white/80">
                 {selectedSlot
                   ? selectedSlot.displayTime === 'ASAP'
@@ -198,34 +199,34 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
 
         <div className="space-y-4 border-t border-white/5 pt-8">
           <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]">
-            <span className="text-white/20">Sortie value</span>
+            <span className="text-white/20">Order value</span>
             <span className="text-white/40 font-bold">₹{subtotal}</span>
           </div>
 
           {discountAmount > 0 && (
             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em] text-green-500">
-              <span className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5" /> Protocol savings</span>
+              <span className="flex items-center gap-2"><Sparkles className="w-3.5 h-3.5" /> Slot savings</span>
               <span className="text-shadow-glow">- ₹{discountAmount}</span>
             </div>
           )}
 
           <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-[0.2em]">
-            <span className="text-white/20">Operational fees (5%)</span>
+            <span className="text-white/20">Service fees (5%)</span>
             <span className="text-white/40 font-bold">₹{taxAmount}</span>
           </div>
 
           <div className="flex justify-between items-end pt-4">
-            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-1.5">FINAL PAYLOAD</span>
+            <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-1.5">ORDER TOTAL</span>
             <span className="text-4xl font-black text-white tracking-tighter text-gradient leading-none">₹{paymentTotal}</span>
           </div>
         </div>
 
         <div className="space-y-4 border-t border-white/5 pt-8 pb-4">
-          <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">PAYMENT PROTOCOL</p>
+          <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">PAYMENT METHOD</p>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { id: 'upi', label: 'UPI OPS' },
-              { id: 'card', label: 'CARD OPS' }
+              { id: 'upi', label: 'UPI' },
+              { id: 'card', label: 'CARD' }
             ].map((method) => (
               <button
                 key={method.id}
@@ -266,12 +267,12 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
               >
                 {loading ? (
                   <div className="flex items-center gap-3">
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Spinner className="w-4 h-4" />
                     CALIBRATING...
                   </div>
                 ) : (
                   <>
-                    <span className="relative z-10">AUTHORIZE ₹{paymentTotal}</span>
+                    <span className="relative z-10">PAY ₹{paymentTotal}</span>
                     <div className="absolute inset-0 bg-linear-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
                   </>
                 )}
@@ -279,7 +280,7 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
               <div className="flex items-center justify-center gap-3">
                 <ShieldCheck className="w-4 h-4 text-green-500/40" />
                 <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.4em]">
-                  Hardware Encryption Protocol: ACTIVE
+                  Secure Payment Gateway: ACTIVE
                 </p>
               </div>
             </div>

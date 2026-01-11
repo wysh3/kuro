@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { getAllOrders, getMenuItems, subscribeToOrders, subscribeToMenuItems } from '@/lib/firebase/db'
+import { Spinner } from '@/components/ui/spinner'
 
 export default function DebugPage() {
   const [data, setData] = useState<any>({})
@@ -94,7 +95,7 @@ export default function DebugPage() {
     return (
       <div className="min-h-screen bg-background p-8 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <Spinner className="w-8 h-8 mx-auto mb-4" />
           <p className="text-muted-foreground">Loading debug data...</p>
         </div>
       </div>

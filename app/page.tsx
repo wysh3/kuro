@@ -83,7 +83,7 @@ export default function LoginPage() {
     return (
       <div className="min-h-screen w-full flex items-center justify-center bg-black">
         <motion.div
-          animate={{ scale: [1, 1.1, 1], rotate: [0, 90, 0] }}
+          animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full shadow-[0_0_30px_rgba(255,255,255,0.1)]"
         />
@@ -120,7 +120,7 @@ export default function LoginPage() {
             <h1 className="text-7xl font-black tracking-tighter text-white uppercase leading-none">
               <span className="text-gradient">KURO.</span>
             </h1>
-            <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">High Performance Ops</p>
+            <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Smart Campus Dining</p>
           </div>
         </div>
 
@@ -138,8 +138,8 @@ export default function LoginPage() {
                   <Zap className="w-5 h-5 text-apple-blue" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">INITIATE MISSION</h2>
-                  <p className="text-[10px] text-white/30 mt-1.5 uppercase font-bold tracking-widest">Customer Protocol</p>
+                  <h2 className="text-sm font-black text-white uppercase tracking-widest leading-none">GET STARTED</h2>
+                  <p className="text-[10px] text-white/30 mt-1.5 uppercase font-bold tracking-widest">Customer Access</p>
                 </div>
               </div>
 
@@ -157,7 +157,7 @@ export default function LoginPage() {
                   variant="ghost"
                   className="w-full h-12 text-[10px] font-black tracking-[0.2em] text-white/30 hover:text-white uppercase transition-all rounded-[1.2rem]"
                 >
-                  GUEST ACCESS UNIT
+                  GUEST ACCESS
                 </Button>
               </div>
             </div>
@@ -178,7 +178,7 @@ export default function LoginPage() {
                   <Shield className="w-4 h-4 text-white/40 group-hover:text-white/80" />
                 </div>
                 <div className="text-left">
-                  <h3 className="text-[10px] font-black text-white/40 group-hover:text-white/80 uppercase tracking-widest leading-none">MISSION CONTROL</h3>
+                  <h3 className="text-[10px] font-black text-white/40 group-hover:text-white/80 uppercase tracking-widest leading-none">STAFF CONSOLE</h3>
                   <p className="text-[8px] font-bold text-white/20 uppercase tracking-widest mt-1">STAFF ONLY</p>
                 </div>
               </div>
@@ -192,7 +192,7 @@ export default function LoginPage() {
           <div className="flex items-center justify-center gap-6">
             <div className="h-[1px] w-8 bg-white/10" />
             <p className="text-[9px] font-black text-white/10 uppercase tracking-[0.5em]">
-              SECURE MESH ACTIVE
+              SECURE SYSTEM ACTIVE
             </p>
             <div className="h-[1px] w-8 bg-white/10" />
           </div>

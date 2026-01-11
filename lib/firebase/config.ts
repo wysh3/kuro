@@ -2,6 +2,7 @@ import { initializeApp, getApps, FirebaseApp } from 'firebase/app'
 import { getFirestore, Firestore } from 'firebase/firestore'
 import { getAnalytics, Analytics } from 'firebase/analytics'
 import { getAuth, Auth } from 'firebase/auth'
+import { getMessaging, Messaging } from 'firebase/messaging'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -17,25 +18,26 @@ let app: FirebaseApp | null = null
 let db: Firestore | null = null
 let analytics: Analytics | null = null
 let auth: Auth | null = null
+let messaging: Messaging | null = null
 
 function initializeFirebaseIfNotInitialized(): { app: FirebaseApp; db: Firestore; analytics: Analytics | null } {
   if (!app && !db) {
     try {
       app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig)
-      
+
       if (typeof window !== 'undefined') {
         analytics = getAnalytics(app)
       }
-      
+
       db = getFirestore(app)
-      
+
       console.log('✅ Firebase initialized successfully')
     } catch (error) {
       console.error('❌ Firebase initialization error:', error)
       throw new Error('Failed to initialize Firebase. Please check your configuration.')
     }
   }
-  
+
   return { app: app!, db: db!, analytics }
 }
 
@@ -55,6 +57,20 @@ export function getFirebaseAuth(): Auth {
     auth = getAuth(app)
   }
   return auth
+}
+
+export function getFirebaseMessaging(): Messaging | null {
+  const { app } = initializeFirebaseIfNotInitialized()
+  if (typeof window === 'undefined') return null
+  if (!messaging) {
+    try {
+      messaging = getMessaging(app)
+    } catch (e) {
+      console.warn('Messaging not supported in this environment')
+      return null
+    }
+  }
+  return messaging
 }
 
 export { initializeFirebaseIfNotInitialized }

@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ShoppingBag, ChevronRight, ArrowLeft, Clock, CheckCircle2, Loader2 } from 'lucide-react'
+import { ShoppingBag, ChevronRight, ArrowLeft, Clock, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/use-auth'
-import { getOrdersByUserId, Order, convertTimestampToDate } from '@/lib/firebase/db'
+import { getOrdersByUserId, convertTimestampToDate } from '@/lib/firebase/db'
+import { Order } from '@/lib/types'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
+import { Spinner } from '@/components/ui/spinner'
 
 export default function OrdersPage() {
     const router = useRouter()
@@ -26,21 +28,19 @@ export default function OrdersPage() {
     }, [])
 
     useEffect(() => {
+        if (authLoading) return
+
         async function fetchOrders() {
             if (user) {
                 try {
                     const userOrders = await getOrdersByUserId(user.uid)
-                    setOrders(userOrders.sort((a, b) => {
-                        const dateA = convertTimestampToDate(a.createdAt).getTime()
-                        const dateB = convertTimestampToDate(b.createdAt).getTime()
-                        return dateB - dateA
-                    }))
+                    setOrders(userOrders)
                 } catch (error) {
                     console.error('Error fetching orders:', error)
                 } finally {
                     setLoading(false)
                 }
-            } else if (!authLoading) {
+            } else {
                 setLoading(false)
             }
         }
@@ -50,7 +50,7 @@ export default function OrdersPage() {
     if (authLoading || loading) {
         return (
             <div className="min-h-screen bg-black flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-white/20 animate-spin" />
+                <Spinner className="w-8 h-8 text-white/20" />
             </div>
         )
     }
@@ -72,8 +72,8 @@ export default function OrdersPage() {
                             <ArrowLeft className="w-5 h-5 text-white/40" />
                         </Button>
                         <div>
-                            <h1 className="text-[10px] font-black tracking-[0.4em] uppercase leading-none text-white/40">MISSION LOGS</h1>
-                            <p className="text-xs font-black text-white mt-1 uppercase tracking-widest">Order Deployment History</p>
+                            <h1 className="text-[10px] font-black tracking-[0.4em] uppercase leading-none text-white/40">ORDER HISTORY</h1>
+                            <p className="text-xs font-black text-white mt-1 uppercase tracking-widest">Past Orders</p>
                         </div>
                     </div>
                 </div>
@@ -86,19 +86,19 @@ export default function OrdersPage() {
                             <ShoppingBag className="w-10 h-10 text-white/10 group-hover:text-white/40 transition-colors duration-500" />
                         </div>
                         <div className="space-y-4 text-center">
-                            <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">Zero Sorties Recorded on this ID</p>
+                            <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">No Orders Recorded on this ID</p>
                             <Button
                                 onClick={() => router.push('/customer')}
                                 className="h-16 px-10 bg-white text-black hover:bg-white/90 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] shadow-premium active:scale-95 transition-all"
                             >
-                                INITIATE FIRST MISSION
+                                START ORDERING
                             </Button>
                         </div>
                     </div>
                 ) : (
                     <div className="space-y-6">
                         <div className="flex items-center gap-4 px-2 mb-10">
-                            <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">PRIORITY SORTIES</h3>
+                            <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">RECENT ORDERS</h3>
                             <div className="h-[1px] flex-1 bg-white/5" />
                         </div>
 

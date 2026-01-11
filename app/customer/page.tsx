@@ -8,9 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ShoppingCart, LogOut, Sparkles, Clock, TrendingUp, Search, Plus } from "lucide-react"
 import { ProductMenu } from "@/components/customer/product-menu"
-import { CartDrawer } from "@/components/customer/cart-drawer"
 import { CrowdStatusCard } from "@/components/customer/crowd-status-card"
 import { RushWarningBanner } from "@/components/customer/rush-warning-banner"
+import { ActiveOrders } from "@/components/customer/active-orders"
+import { InteractiveGreeting } from "@/components/customer/interactive-greeting"
+import { KuroPersona } from "@/components/customer/kuro-persona"
+import { CampusBuzz } from "@/components/customer/campus-buzz"
 import { useAuth } from "@/hooks/use-auth"
 import { useCart } from "@/contexts/cart-context"
 import { motion, AnimatePresence } from "framer-motion"
@@ -19,10 +22,10 @@ import { cn } from "@/lib/utils"
 export default function CustomerPage() {
   const router = useRouter()
   const { user, userProfile, loading, signOut } = useAuth()
-  const { cart, addToCart, removeFromCart, cartTotal, clearCart } = useCart()
-  const [showOrder, setShowOrder] = useState(false)
+  const { cart, addToCart, removeFromCart, cartTotal, clearCart, setIsDrawerOpen } = useCart()
   const [isScrolled, setIsScrolled] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [currentTime, setCurrentTime] = useState(new Date())
 
   useEffect(() => {
     setMounted(true)
@@ -40,7 +43,13 @@ export default function CustomerPage() {
     }
   }, [])
 
-  // Removed redundant scroll to top effect that was causing jumps on state changes
+  // Timer effect for currentTime
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date())
+    }, 60000) // Update every minute
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     console.log('🔐 Auth state:', { loading, user: !!user, userProfile: !!userProfile, mounted })
@@ -63,9 +72,16 @@ export default function CustomerPage() {
     return (
       <div className="fixed inset-0 bg-background z-[100] flex items-center justify-center">
         <motion.div
-          animate={{ scale: [1, 1.1, 1], rotate: [0, 90, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full shadow-[0_0_30px_rgba(255,255,255,0.1)]"
+          initial={{ rotate: 0, scale: 1 }}
+          animate={{ 
+            rotate: 360,
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ 
+            rotate: { duration: 1, repeat: Infinity, ease: "linear" },
+            scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+          }}
+          className="w-12 h-12 border-2 border-white/5 border-t-white rounded-full shadow-[0_0_30px_rgba(255,255,255,0.1)]"
         />
         <div className="absolute bottom-12 text-[9px] font-black text-white/20 uppercase tracking-[0.4em]">Establishing Neural Sync</div>
       </div>
@@ -77,7 +93,7 @@ export default function CustomerPage() {
   const userPhoto = user?.photoURL
 
   const greeting = () => {
-    const hour = new Date().getHours()
+    const hour = currentTime.getHours()
     if (hour < 12) return "Good Morning"
     if (hour < 17) return "Good Afternoon"
     return "Good Evening"
@@ -118,27 +134,30 @@ export default function CustomerPage() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4">
-            <CartDrawer trigger={
-              <Button variant="ghost" size="icon" className="relative text-white/60 hover:text-white group bg-white/5 rounded-xl border border-white/5">
+            <Button
+              onClick={() => setIsDrawerOpen(true)}
+              variant="ghost"
+              size="icon"
+              className="relative text-white/60 hover:text-white group bg-white/5 rounded-xl border border-white/5"
+            >
+              <motion.div
+                key={cart.length}
+                initial={{ scale: 1 }}
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 0.3 }}
+              >
+                <ShoppingCart className="w-4.5 h-4.5" />
+              </motion.div>
+              {cart.length > 0 && (
                 <motion.div
-                  key={cart.length}
-                  initial={{ scale: 1 }}
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ duration: 0.3 }}
+                  initial={{ scale: 0, y: 10 }}
+                  animate={{ scale: 1, y: 0 }}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-black text-[10px] font-black rounded-lg border-2 border-black flex items-center justify-center shadow-premium"
                 >
-                  <ShoppingCart className="w-4.5 h-4.5" />
+                  {cart.reduce((acc, item) => acc + item.quantity, 0)}
                 </motion.div>
-                {cart.length > 0 && (
-                  <motion.div
-                    initial={{ scale: 0, y: 10 }}
-                    animate={{ scale: 1, y: 0 }}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-black text-[10px] font-black rounded-lg border-2 border-black flex items-center justify-center shadow-premium"
-                  >
-                    {cart.reduce((acc, item) => acc + item.quantity, 0)}
-                  </motion.div>
-                )}
-              </Button>
-            } />
+              )}
+            </Button>
 
             {userProfile?.kitchenStaff && (
               <Button
@@ -184,16 +203,21 @@ export default function CustomerPage() {
                 <div className="sm:pl-4">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-2 h-2 rounded-full bg-apple-blue animate-pulse" />
-                    <span className="text-label-xs font-black text-white/30 uppercase tracking-[0.5em]">Sector 7 Access Active</span>
+                    <span className="text-label-xs font-black text-white/30 uppercase tracking-[0.5em]">Campus Dining Active</span>
+                  </div>
+                  <div className="mb-8 max-w-xl">
+                    <CampusBuzz />
                   </div>
                   <h2 className="text-6xl sm:text-8xl font-black tracking-tighter text-white uppercase leading-[0.85] mb-8">
-                    <span className="text-white/20">{greeting()},</span> <br />
+                    <InteractiveGreeting firstName={firstName} />
                     <span className="text-gradient inline-block mt-2">{firstName}</span>
                   </h2>
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-3 px-5 py-3 bg-white/[0.03] border border-white/10 rounded-2xl shadow-premium backdrop-blur-md">
                       <Clock className="w-4 h-4 text-apple-blue" />
-                      <span className="text-xs font-black text-white/60 tracking-widest">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      <span className="text-xs font-black text-white/60 tracking-widest">
+                        {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
                     <div className="flex items-center gap-3 px-5 py-3 bg-white/[0.03] border border-white/10 rounded-2xl shadow-premium backdrop-blur-md">
                       <TrendingUp className="w-4 h-4 text-green-500" />
@@ -203,12 +227,21 @@ export default function CustomerPage() {
                 </div>
               </motion.div>
 
-              {/* Status Integration */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="lg:col-span-5"
+                className="lg:col-span-12"
+              >
+                <KuroPersona />
+              </motion.div>
+
+              {/* Status Integration */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.25 }}
+                className="lg:col-span-12"
               >
                 <CrowdStatusCard />
               </motion.div>
@@ -226,11 +259,11 @@ export default function CustomerPage() {
                   <div className="w-10 h-10 rounded-xl bg-apple-blue/10 flex items-center justify-center">
                     <TrendingUp className="w-5 h-5 text-apple-blue" />
                   </div>
-                  <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">DAILY PERFORMANCE</h4>
+                  <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Kitchen Efficiency</h4>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-3xl font-black text-white italic tracking-tighter">98% OPTIMAL</p>
-                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest leading-relaxed">Fueling efficiency at peak levels. Minimal latency detected in metabolic sync.</p>
+                  <p className="text-3xl font-black text-white italic tracking-tighter">98% Faster</p>
+                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest leading-relaxed">The kitchen is operating at peak speed today. Minimal wait times expected.</p>
                 </div>
               </motion.div>
 
@@ -244,11 +277,11 @@ export default function CustomerPage() {
                   <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
                     <Sparkles className="w-5 h-5 text-green-500" />
                   </div>
-                  <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">ACTIVE MISSION</h4>
+                  <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Today's Special</h4>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-3xl font-black text-white italic tracking-tighter text-gradient">LUNCH OPS</p>
-                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest leading-relaxed">System ready for deployment. Menu modules calibrated for current timeframe.</p>
+                  <p className="text-3xl font-black text-white italic tracking-tighter text-gradient">POKE BOWL</p>
+                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest leading-relaxed">Our most loved dish today. Fresh, healthy, and ready in minutes.</p>
                 </div>
               </motion.div>
 
@@ -262,11 +295,11 @@ export default function CustomerPage() {
                   <div className="w-10 h-10 rounded-xl bg-tesla-red/10 flex items-center justify-center">
                     <LogOut className="w-5 h-5 text-tesla-red" />
                   </div>
-                  <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">QUICK LOGOUT</h4>
+                  <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">ACCOUNT</h4>
                 </div>
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest max-w-[140px]">Terminate current authorized session</p>
-                  <Button onClick={handleLogout} variant="ghost" className="h-10 px-4 rounded-xl bg-tesla-red/5 hover:bg-tesla-red border border-tesla-red/20 text-tesla-red hover:text-white transition-all text-[9px] font-black tracking-widest">DISCONNECT</Button>
+                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest max-w-[140px]">Sign out of your account</p>
+                  <Button onClick={handleLogout} variant="ghost" className="h-10 px-4 rounded-xl bg-tesla-red/5 hover:bg-tesla-red border border-tesla-red/20 text-tesla-red hover:text-white transition-all text-[9px] font-black tracking-widest">LOGOUT</Button>
                 </div>
               </motion.div>
             </div>
@@ -292,7 +325,7 @@ export default function CustomerPage() {
                 <div className="flex flex-col sm:flex-row items-start justify-between gap-12 relative z-10">
                   <div className="flex-1 space-y-8">
                     <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 rounded-[1.5rem] bg-white shadow-premium flex items-center justify-center text-black group-hover:rotate-[15deg] transition-transform duration-700">
+                      <div className="w-16 h-16 rounded-[1.5rem] bg-white shadow-premium flex items-center justify-center text-black transition-transform duration-700">
                         <Sparkles className="w-8 h-8" />
                       </div>
                       <div>
@@ -305,7 +338,7 @@ export default function CustomerPage() {
                     </div>
 
                     <p className="text-2xl text-white/60 font-medium leading-relaxed max-w-2xl italic tracking-tight">
-                      "Precision fueling engineered for the modern operative. Calibrate your nutritional mission with predictive AI intelligence."
+                      "Precision fueling engineered for the modern lifestyle. Calibrate your nutritional goals with predictive AI intelligence."
                     </p>
 
                     <div className="flex flex-wrap gap-3">
@@ -320,8 +353,8 @@ export default function CustomerPage() {
                   <div className="hidden md:block">
                     <div className="w-48 h-48 rounded-full border border-white/5 flex items-center justify-center relative">
                       <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+                        animate={{ opacity: [0.4, 0.8, 0.4] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
                         className="absolute inset-2 border-t-2 border-apple-blue/40 rounded-full"
                       />
                       <Sparkles className="w-16 h-16 text-white/10 group-hover:text-white/40 transition-colors duration-500" />
@@ -331,6 +364,9 @@ export default function CustomerPage() {
               </button>
             </motion.div>
           </div>
+
+          {/* Active Orders Section */}
+          <ActiveOrders />
 
           <div className="space-y-8">
             <div className="flex items-center justify-between px-2">
