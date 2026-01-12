@@ -118,6 +118,7 @@ export default function CustomerPage() {
                   width={36}
                   height={36}
                   className="object-cover scale-100"
+                  loading="eager"
                 />
               </div>
               <span className="text-label-sm font-black text-white/90 hidden sm:block tracking-widest">KURO.</span>

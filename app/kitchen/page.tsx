@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -55,28 +55,32 @@ export default function KitchenPage() {
 
   const handleUpdateStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
+      const order = orders.find(o => o.id === orderId)
+
+      if (!order) {
+        console.error(`Order ${orderId} not found`)
+        return
+      }
+
       await updateOrderStatus(orderId, newStatus)
+
       if (newStatus === 'ready') {
         setNewOrderAlert(true)
         setTimeout(() => setNewOrderAlert(false), 3000)
 
-        // Notify customer
-        const order = orders.find(o => o.id === orderId)
-        if (order) {
-          fetch('/api/notify/ready', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orderId, status: 'ready', userId: order.userId })
-          }).catch(err => console.error('Notify error:', err))
-        }
+        fetch('/api/notify/ready', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orderId, status: 'ready', userId: order.userId })
+        }).catch(err => console.error('Notify error:', err))
       }
     } catch (error) {
       console.error('Failed to update order status:', error)
     }
   }
 
-  const preparingOrders = orders.filter((o) => o.status === 'kitchen_received' || o.status === 'preparing')
-  const readyOrders = orders.filter((o) => o.status === 'ready')
+  const preparingOrders = useMemo(() => orders.filter((o) => o.status === 'kitchen_received' || o.status === 'preparing'), [orders])
+  const readyOrders = useMemo(() => orders.filter((o) => o.status === 'ready'), [orders])
 
   const formatTime = (timestamp: any): string => {
     if (!timestamp) return 'N/A'

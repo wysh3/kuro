@@ -12,80 +12,85 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-    console.log('[FCM SW] Push event received:', event.data?.json());
+    if (!event.data) return;
 
-    let data = {
-        title: 'KURO Update',
-        body: 'New notification from KURO',
-        icon: '/logo.png',
-        badge: '/logo.png',
-        tag: 'kuro-notification',
-        data: { url: '/customer' }
-    };
+    console.log('[FCM SW] Push event received');
 
-    if (event.data) {
+    const handlePush = async () => {
         try {
-            data = { ...data, ...event.data.json() };
-        } catch (e) {
-            console.error('[FCM SW] Error parsing push data:', e);
-        }
-    }
+            const rawData = event.data.json();
 
-    const options = {
-        body: data.body,
-        icon: data.icon,
-        badge: data.badge,
-        tag: data.tag,
-        data: data.data,
-        vibrate: [200, 100, 200],
-        requireInteraction: true,
-        actions: [
-            { action: 'open', title: 'View' },
-            { action: 'dismiss', title: 'Dismiss' }
-        ],
-        renotify: true
+            let data = {
+                title: 'KURO Update',
+                body: 'New notification from KURO',
+                icon: '/logo.png',
+                badge: '/logo.png',
+                tag: 'kuro-notification',
+                data: { url: '/customer' }
+            };
+
+            if (rawData) {
+                data = { ...data, ...rawData };
+            }
+
+            const options = {
+                body: data.body,
+                icon: data.icon,
+                badge: data.badge,
+                tag: data.tag,
+                data: data.data,
+                vibrate: [200, 100, 200],
+                requireInteraction: true,
+                actions: [
+                    { action: 'open', title: 'View' },
+                    { action: 'dismiss', title: 'Dismiss' }
+                ],
+                renotify: true
+            };
+
+            await self.registration.showNotification(data.title, options);
+        } catch (e) {
+            console.error('[FCM SW] Error handling push:', e);
+        }
     };
 
-    event.waitUntil(
-        self.registration.showNotification(data.title, options)
-    );
+    event.waitUntil(handlePush());
 });
 
 self.addEventListener('notificationclick', (event) => {
-    console.log('[FCM SW] Notification clicked:', event.action);
-
     event.notification.close();
 
     if (event.action === 'dismiss') {
         return;
     }
 
-    let urlToOpen = '/customer';
+    const handleNotificationClick = async () => {
+        let urlToOpen = '/customer';
 
-    try {
-        if (event.notification.data && typeof event.notification.data === 'string') {
-            urlToOpen = event.notification.data;
-        } else if (event.notification.data && event.notification.data.url) {
-            urlToOpen = event.notification.data.url;
+        try {
+            if (event.notification.data && typeof event.notification.data === 'string') {
+                urlToOpen = event.notification.data;
+            } else if (event.notification.data && event.notification.data.url) {
+                urlToOpen = event.notification.data.url;
+            }
+        } catch (e) {
+            console.error('[FCM SW] Error parsing notification data:', e);
         }
-    } catch (e) {
-        console.error('[FCM SW] Error parsing notification data:', e);
-    }
 
-    event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-            for (let i = 0; i < windowClients.length; i++) {
-                const client = windowClients[i];
-                if (client.url === urlToOpen && 'focus' in client) {
-                    return client.focus();
-                }
+        const windowClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+
+        for (const client of windowClients) {
+            if (client.url.includes(urlToOpen) && 'focus' in client) {
+                return client.focus();
             }
-            if (clients.openWindow) {
-                return clients.openWindow(urlToOpen);
-            }
-            return null;
-        })
-    );
+        }
+
+        if (clients.openWindow) {
+            return clients.openWindow(urlToOpen);
+        }
+    };
+
+    event.waitUntil(handleNotificationClick());
 });
 
 self.addEventListener('notificationclose', (event) => {

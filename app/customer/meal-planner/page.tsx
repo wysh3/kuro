@@ -85,44 +85,45 @@ export default function MealPlannerPage() {
     const handleSendMessage = async (text: string) => {
         if (!text.trim() || loading) return;
 
-        // Optimistically add user message
         const userMessage: ChatMessage = { role: 'user', content: text };
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setLoading(true);
 
+        const controller = new AbortController();
+        const { signal } = controller;
+
         try {
-            // Call Chat API
             const response = await fetch('/api/ai/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: text,
                     conversationHistory: messages
-                })
+                }),
+                signal
             });
+
+            if (signal.aborted) return;
 
             const data = await response.json();
 
-            if (data.success && data.response) {
+            if (!signal.aborted && data.success && data.response) {
                 const aiResponse: ChatResponse = data.response;
 
-                // Add AI message
                 setMessages(prev => [...prev, {
                     role: 'assistant',
                     content: aiResponse.message
                 }]);
 
-                // Handle meal plans
-                if (aiResponse.mealPlan) {
+                if (!signal.aborted && aiResponse.mealPlan) {
                     setMessages(prev => [...prev, {
                         role: 'assistant',
                         content: JSON.stringify({ type: 'meal_plan', plan: aiResponse.mealPlan })
                     }]);
                 }
 
-                // Handle order confirmation
-                if (aiResponse.orderConfirmation) {
+                if (!signal.aborted && aiResponse.orderConfirmation) {
                     setPendingOrder(aiResponse.orderConfirmation);
                     setMessages(prev => [...prev, {
                         role: 'assistant',
@@ -130,8 +131,7 @@ export default function MealPlannerPage() {
                     }]);
                 }
 
-                // Handle suggested items
-                if (aiResponse.suggestedItems && aiResponse.suggestedItems.length > 0) {
+                if (!signal.aborted && aiResponse.suggestedItems && aiResponse.suggestedItems.length > 0) {
                     setMessages(prev => [...prev, {
                         role: 'assistant',
                         content: JSON.stringify({ type: 'suggestions', items: aiResponse.suggestedItems })
@@ -142,13 +142,17 @@ export default function MealPlannerPage() {
                 throw new Error(data.error || 'Failed to get response');
             }
         } catch (error) {
-            console.error('Error:', error);
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: 'I had a bit of trouble connecting to the kitchen. Could you try asking that again?'
-            }]);
+            if (!signal.aborted) {
+                console.error('Error:', error);
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: 'I had a bit of trouble connecting to the kitchen. Could you try asking that again?'
+                }]);
+            }
         } finally {
-            setLoading(false);
+            if (!signal.aborted) {
+                setLoading(false);
+            }
         }
     };
 
@@ -301,16 +305,17 @@ export default function MealPlannerPage() {
                             >
                                 <ArrowLeft className="w-5 h-5 text-white/40" />
                             </button>
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-white shadow-premium flex items-center justify-center overflow-hidden">
-                                    <Image
-                                        src="/logo.png"
-                                        alt="KURO Logo"
-                                        width={36}
-                                        height={36}
-                                        className="object-cover"
-                                    />
-                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 rounded-xl bg-white shadow-premium flex items-center justify-center overflow-hidden">
+                                        <Image
+                                            src="/logo.png"
+                                            alt="KURO Logo"
+                                            width={36}
+                                            height={36}
+                                            className="object-cover"
+                                            loading="eager"
+                                        />
+                                    </div>
                                 <div>
                                     <h1 className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] leading-none">AI ASSISTANT</h1>
                                     <p className="text-xs font-black text-white mt-1 uppercase tracking-widest">AI MEAL PLANNER</p>
@@ -359,6 +364,7 @@ export default function MealPlannerPage() {
                                             width={32}
                                             height={32}
                                             className="object-cover"
+                                            loading="eager"
                                         />
                                     </div>
                                 )}

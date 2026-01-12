@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -45,6 +45,7 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
   const [razorpayOrderId, setRazorpayOrderId] = useState<string | null>(null)
   const [creatingOrder, setCreatingOrder] = useState(false)
   const [showSchedule, setShowSchedule] = useState(false)
+  const abortControllerRef = useRef<AbortController | null>(null)
 
   const taxAmount = Math.round((subtotal - discountAmount) * 0.05);
   const paymentTotal = (subtotal - discountAmount) + taxAmount;
@@ -56,14 +57,30 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
   }
 
   const createRazorpayOrder = async (amount: number) => {
-    const response = await fetch('/api/payment/create-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount, receipt: generateReceiptId() }),
-    })
-    const data = await response.json()
-    if (!data.success) throw new Error(data.message || 'Failed to create payment order')
-    return data.order.id
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    const { signal } = controller;
+
+    try {
+      const response = await fetch('/api/payment/create-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, receipt: generateReceiptId() }),
+        signal,
+      });
+
+      if (signal.aborted) throw new Error('Request aborted');
+
+      const data = await response.json();
+      if (!data.success) throw new Error(data.message || 'Failed to create payment order');
+      return data.order.id;
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        console.log('Payment order request aborted');
+        throw err;
+      }
+      throw err;
+    }
   }
 
   const handlePaymentSuccess = async (response: RazorpayPaymentResponse) => {
@@ -111,6 +128,14 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
       onBack()
     }
   }, [subtotal, cart.length, onBack])
+
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [])
 
   const content = (
     <div className="space-y-10 pb-12">

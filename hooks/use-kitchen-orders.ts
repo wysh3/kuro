@@ -1,13 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { subscribeToOrders, updateOrderStatus as updateOrderInFirebase, convertTimestampToISO } from '@/lib/firebase/db'
 import { Order } from '@/lib/types'
+
+let broadcastChannel: BroadcastChannel | null = null
 
 export function useKitchenOrders() {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const channelRef = useRef<BroadcastChannel | null>(null)
 
   useEffect(() => {
     const unsubscribe = subscribeToOrders(
@@ -23,14 +26,25 @@ export function useKitchenOrders() {
       }
     )
 
-    return () => unsubscribe()
+    if (typeof window !== 'undefined' && !broadcastChannel) {
+      broadcastChannel = new BroadcastChannel('order-updates')
+      channelRef.current = broadcastChannel
+    }
+
+    return () => {
+      unsubscribe()
+      if (channelRef.current && channelRef.current === broadcastChannel) {
+        channelRef.current.close()
+        broadcastChannel = null
+        channelRef.current = null
+      }
+    }
   }, [])
 
   const updateOrderStatus = async (orderId: string, newStatus: Order['status']) => {
     try {
       await updateOrderInFirebase(orderId, newStatus)
 
-      // Notify customer via browser notification if order is ready
       if (newStatus === 'ready') {
         notifyCustomer(orderId, 'Your order is ready!')
       }
@@ -44,7 +58,6 @@ export function useKitchenOrders() {
 }
 
 function notifyCustomer(orderId: string, message: string) {
-  // Request notification permission
   if (typeof window !== 'undefined' && 'Notification' in window) {
     if (Notification.permission === 'granted') {
       new Notification('KURO Canteen', { body: message })
@@ -57,15 +70,12 @@ function notifyCustomer(orderId: string, message: string) {
     }
   }
 
-  // Send notification to all open windows via broadcast channel
-  if (typeof window !== 'undefined') {
-    const channel = new BroadcastChannel('order-updates')
-    channel.postMessage({
+  if (typeof window !== 'undefined' && broadcastChannel) {
+    broadcastChannel.postMessage({
       type: 'order_ready',
       orderId,
       message,
       timestamp: new Date().toISOString(),
     })
-    channel.close()
   }
 }

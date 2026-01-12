@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, startTransition } from 'react'
 import { User } from 'firebase/auth'
 import {
   signInWithGoogle as signInWithGoogleAuth,
@@ -28,20 +28,27 @@ export function useAuth(): UseAuthReturn {
 
   useEffect(() => {
     let unsubscribe: (() => void) | null = null
+    let mounted = true
 
     const setupAuthListener = async () => {
       try {
         unsubscribe = onAuthStateChange(async (authUser) => {
-          console.log('🔑 Auth state changed:', { user: !!authUser, email: authUser?.email })
-          setUser(authUser)
-          setLoading(true)
-          setError(null)
+          if (!mounted) return
 
-          if (authUser) {
+          startTransition(() => {
+            console.log('🔑 Auth state changed:', { user: !!authUser, email: authUser?.email })
+            setUser(authUser)
+            setLoading(true)
+            setError(null)
+          })
+
+          if (authUser && mounted) {
             try {
               let profile = await getUserProfile(authUser.uid)
-              console.log('👤 Profile loaded:', !!profile)
-              setUserProfile(profile)
+              if (mounted) {
+                console.log('👤 Profile loaded:', !!profile)
+                startTransition(() => setUserProfile(profile))
+              }
             } catch (err) {
               console.log('📝 Creating new user profile for:', authUser.uid)
               try {
@@ -50,29 +57,42 @@ export function useAuth(): UseAuthReturn {
                   displayName: authUser.displayName || '',
                   photoURL: authUser.photoURL || undefined
                 })
-                setUserProfile(newProfile)
+                if (mounted) {
+                  startTransition(() => setUserProfile(newProfile))
+                }
               } catch (createError) {
                 console.error('❌ Failed to create user profile:', createError)
-                setError('Failed to create user profile')
+                if (mounted) {
+                  startTransition(() => setError('Failed to create user profile'))
+                }
               }
             }
-          } else {
-            setUserProfile(null)
+          } else if (mounted) {
+            startTransition(() => setUserProfile(null))
           }
 
-          setLoading(false)
-          console.log('✅ Auth state finalized:', { loading: false, user: !!authUser })
+          if (mounted) {
+            startTransition(() => {
+              setLoading(false)
+              console.log('✅ Auth state finalized:', { loading: false, user: !!authUser })
+            })
+          }
         })
       } catch (err) {
         console.error('❌ Error setting up auth listener:', err)
-        setError('Failed to initialize authentication')
-        setLoading(false)
+        if (mounted) {
+          startTransition(() => {
+            setError('Failed to initialize authentication')
+            setLoading(false)
+          })
+        }
       }
     }
 
     setupAuthListener()
 
     return () => {
+      mounted = false
       if (unsubscribe) {
         unsubscribe()
       }
