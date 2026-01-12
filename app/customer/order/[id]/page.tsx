@@ -1,22 +1,31 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { useOrderUpdates } from '@/hooks/use-order-updates'
-import { Order, convertTimestampToISO } from '@/lib/firebase/db'
+import { Order } from '@/lib/types'
+import { convertTimestampToISO } from '@/lib/firebase/db'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Clock, CheckCircle2, Home, Bell, AlertCircle, Activity, Zap, Shield, ChevronLeft } from 'lucide-react'
+import { Clock, CheckCircle2, Home, Bell, AlertCircle, Activity, Zap, Shield, ChevronLeft, BellRing, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { requestNotificationPermission, getNotificationPermissionStatus, onMessageListener } from '@/lib/firebase/messaging'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function OrderTrackingPage() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const orderId = params.id as string
 
+  const { user } = useAuth()
   const { order, isReady, loading, error } = useOrderUpdates(orderId)
   const [notificationGranted, setNotificationGranted] = useState(false)
+  const [notificationStatus, setNotificationStatus] = useState<NotificationPermission>('default')
   const [isScrolled, setIsScrolled] = useState(false)
+  const [requesting, setRequesting] = useState(false)
+  const [showNotificationPrompt, setShowNotificationPrompt] = useState(false)
+  const [notificationEnabled, setNotificationEnabled] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20)
@@ -25,24 +34,67 @@ export default function OrderTrackingPage() {
   }, [])
 
   useEffect(() => {
-    if ('Notification' in window && Notification.permission === 'default') {
-      Notification.requestPermission().then((permission) => {
-        setNotificationGranted(permission === 'granted')
-      })
-    } else if ('Notification' in window && Notification.permission === 'granted') {
-      setNotificationGranted(true)
+    if (typeof window !== 'undefined') {
+      const status = getNotificationPermissionStatus()
+      setNotificationStatus(status)
+      
+      const justPlacedOrder = searchParams.get('justPlaced')
+      if (justPlacedOrder === 'true' && status === 'default') {
+        requestNotifications()
+      }
     }
-  }, [])
+  }, [searchParams])
+
+  useEffect(() => {
+    onMessageListener()
+  }, [notificationStatus])
+
+  const requestNotifications = async () => {
+    if (requesting) return
+    setRequesting(true)
+    
+    try {
+      const permission = await Notification.requestPermission()
+      setNotificationStatus(permission)
+      console.log('[OrderPage] Permission result:', permission)
+      
+      if (permission === 'granted') {
+        setNotificationGranted(true)
+        setNotificationEnabled(true)
+        
+        if (user) {
+          requestNotificationPermission(user.uid).then(token => {
+            if (token) {
+              console.log('[OrderPage] FCM Token saved:', token.substring(0, 20) + '...')
+            }
+          }).catch(err => {
+            console.error('[OrderPage] Token request failed:', err)
+          })
+        }
+        
+        setShowNotificationPrompt(true)
+        setTimeout(() => {
+          setShowNotificationPrompt(false)
+        }, 5000)
+      } else if (permission === 'denied') {
+        setShowNotificationPrompt(true)
+      }
+    } catch (err) {
+      console.error('[OrderPage] Notification request error:', err)
+    } finally {
+      setRequesting(false)
+    }
+  }
 
   if (loading) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-6">
         <motion.div
-          animate={{ scale: [1, 1.1, 1], rotate: [0, 90, 0] }}
+          animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full"
         />
-        <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Checking Mission Status</p>
+        <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Checking Order Status</p>
       </div>
     )
   }
@@ -55,20 +107,20 @@ export default function OrderTrackingPage() {
         </div>
         <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-3">ACCESS TERMINATED</h2>
         <p className="text-[10px] text-white/30 font-black uppercase tracking-widest mb-10">
-          {error || "MISSION ID NOT FOUND IN DEPLOYMENT LOGS"}
+          {error || "ORDER ID NOT FOUND IN ORDER HISTORY"}
         </p>
         <Button onClick={() => router.push('/customer')} variant="ghost" className="h-14 px-10 rounded-2xl bg-white text-black text-[11px] font-black uppercase tracking-widest hover:bg-white/90">
-          <ChevronLeft className="w-4 h-4 mr-2" /> RETURN TO BASE
+          <ChevronLeft className="w-4 h-4 mr-2" /> RETURN HOME
         </Button>
       </div>
     )
   }
 
   const statusSteps = [
-    { key: 'pending', label: 'Unit Authorized', icon: CheckCircle2 },
-    { key: 'kitchen_received', label: 'Mission Received', icon: Clock },
-    { key: 'preparing', label: 'Production Active', icon: Clock },
-    { key: 'ready', label: 'Ready for Extraction', icon: CheckCircle2 },
+    { key: 'pending', label: 'Order Received', icon: CheckCircle2 },
+    { key: 'kitchen_received', label: 'Order Confirmed', icon: Clock },
+    { key: 'preparing', label: 'Preparing Order', icon: Clock },
+    { key: 'ready', label: 'Ready for Pickup', icon: CheckCircle2 },
   ]
 
   const currentStepIndex = statusSteps.findIndex((s) => s.key === order.status)
@@ -101,18 +153,59 @@ export default function OrderTrackingPage() {
               <Zap className="w-5 h-5 text-black" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-[10px] font-black tracking-[0.4em] uppercase leading-none text-white/80">MISSION ID</h1>
+              <h1 className="text-[10px] font-black tracking-[0.4em] uppercase leading-none text-white/80">ORDER ID</h1>
               <p className="text-[9px] font-bold text-white/30 mt-1.5 uppercase tracking-widest">#{order.id.slice(-8).toUpperCase()}</p>
             </div>
           </div>
           <Button onClick={() => router.push('/customer')} variant="ghost" className="h-10 px-5 bg-white/5 hover:bg-white/10 rounded-xl text-[9px] font-black tracking-widest uppercase">
-            <Home className="w-4 h-4 mr-2" /> EXIT MISSION
+            <Home className="w-4 h-4 mr-2" /> EXIT
           </Button>
         </div>
       </header>
 
       {/* Main Content Dashboard */}
       <main className="max-w-2xl mx-auto px-6 pt-32 pb-20 space-y-10 relative z-10">
+        <AnimatePresence>
+          {showNotificationPrompt && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.8, y: 20, height: 0, marginBottom: 0, paddingTop: 0, paddingBottom: 0 }}
+              transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className="glass-panel border-white/5 rounded-[1.5rem] p-5"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                  {notificationEnabled ? <Check className="w-4 h-4 text-white" /> : <Bell className="w-4 h-4 text-white/40" />}
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-[11px] font-black text-white uppercase tracking-widest">
+                    {notificationEnabled ? 'Pickup Alerts Enabled' : notificationStatus === 'denied' ? 'Notifications Blocked' : 'Enable Pickup Alerts'}
+                  </h4>
+                  <p className="text-[10px] text-white/30 mt-0.5">
+                    {notificationEnabled ? "You'll be notified when your order is ready" : notificationStatus === 'denied' ? 'Enable notifications in your browser settings' : 'Get notified when your order is ready'}
+                  </p>
+                </div>
+                {!notificationEnabled && notificationStatus !== 'denied' && (
+                  <Button
+                    onClick={requestNotifications}
+                    disabled={requesting}
+                    className="bg-white text-black h-9 px-5 rounded-xl text-[10px] font-black uppercase tracking-widest"
+                  >
+                    {requesting ? 'Enabling...' : 'Enable'}
+                  </Button>
+                )}
+                <button
+                  onClick={() => setShowNotificationPrompt(false)}
+                  className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center transition-colors"
+                >
+                  <span className="text-white/30 hover:text-white text-lg">×</span>
+                </button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <AnimatePresence>
           {isReady && (
             <motion.div
@@ -127,8 +220,8 @@ export default function OrderTrackingPage() {
                   <Bell className="w-8 h-8 text-black" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-black text-white uppercase tracking-tight">EXTRACTION READY</h3>
-                  <p className="text-[11px] text-green-500 font-bold uppercase tracking-[0.2em] mt-1">Head to the extraction depot now</p>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight">READY FOR PICKUP</h3>
+                  <p className="text-[11px] text-green-500 font-bold uppercase tracking-[0.2em] mt-1">Head to the pickup counter now</p>
                 </div>
               </div>
             </motion.div>
@@ -147,8 +240,8 @@ export default function OrderTrackingPage() {
           <span className="text-[9px] font-black text-white/20 tracking-[0.5em] uppercase mb-10 block">DIGITAL ACCESS TOKEN</span>
 
           <div className="relative inline-block py-10 px-16">
-            <div className="absolute inset-0 bg-white shadow-premium rounded-[3.5rem] rotate-[2deg] opacity-[0.02] group-hover:rotate-[4deg] transition-transform duration-700" />
-            <div className="absolute inset-0 bg-white shadow-premium rounded-[3.5rem] -rotate-[1deg] opacity-[0.01] group-hover:-rotate-[2deg] transition-transform duration-700" />
+            <div className="absolute inset-0 bg-white shadow-premium rounded-[3.5rem] opacity-[0.02] group-hover:opacity-[0.04] transition-opacity duration-700" />
+            <div className="absolute inset-0 bg-white shadow-premium rounded-[3.5rem] opacity-[0.01] group-hover:opacity-[0.02] transition-opacity duration-700" />
 
             <div className="relative z-10">
               <div className="absolute inset-0 bg-apple-blue/20 blur-[100px] rounded-full opacity-30 group-hover:opacity-60 transition-opacity" />
@@ -165,7 +258,7 @@ export default function OrderTrackingPage() {
           </div>
         </motion.div>
 
-        {/* Mission Deployment Logs */}
+        {/* Order Status History */}
         <div className="grid grid-cols-1 gap-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -177,10 +270,10 @@ export default function OrderTrackingPage() {
               <div className="flex items-center justify-between pb-6 border-b border-white/5">
                 <div className="flex items-center gap-4">
                   <Activity className="w-5 h-5 text-apple-blue" />
-                  <h3 className="text-sm font-black text-white uppercase tracking-[0.2em]">MISSION STATUS LOGS</h3>
+                  <h3 className="text-sm font-black text-white uppercase tracking-[0.2em]">ORDER STATUS</h3>
                 </div>
                 <div className="px-3 py-1 rounded-lg bg-apple-blue/10 border border-apple-blue/20 text-[9px] font-black text-apple-blue tracking-widest uppercase animate-pulse">
-                  NEURAL SYNC LIVE
+                  REAL-TIME UPDATES
                 </div>
               </div>
 
@@ -244,11 +337,11 @@ export default function OrderTrackingPage() {
             <div className="bg-white/[0.02] p-8 rounded-[2.2rem] space-y-8">
               <div className="flex items-center gap-4 pb-6 border-b border-white/5">
                 <Shield className="w-5 h-5 text-white/20" />
-                <h3 className="text-sm font-black text-white shadow-premium uppercase tracking-[0.2em]">UNIT MANIFEST</h3>
+                <h3 className="text-sm font-black text-white shadow-premium uppercase tracking-[0.2em]">ORDER ITEMS</h3>
               </div>
 
               <div className="space-y-4">
-                {order.items.map((item) => (
+                {order.items.map((item: any) => (
                   <div key={item.id} className="flex items-center justify-between group p-3 rounded-2xl bg-white/[0.01] border border-transparent hover:border-white/5 transition-all">
                     <div className="flex items-center gap-5">
                       <div className="w-9 h-9 rounded-xl bg-white text-black flex items-center justify-center text-[10px] font-black shadow-premium">
@@ -265,11 +358,11 @@ export default function OrderTrackingPage() {
 
               <div className="pt-8 mt-4 border-t border-white/5 grid grid-cols-2 gap-8">
                 <div className="space-y-2 text-left">
-                  <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] block">Authorized At</span>
+                  <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] block">Time Placed</span>
                   <span className="text-[11px] font-black text-white/50">{formatTimestamp(order.createdAt)}</span>
                 </div>
                 <div className="text-right space-y-1">
-                  <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] block">Authorized Cost</span>
+                  <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] block">Total Amount</span>
                   <span className="text-4xl font-black text-white tracking-tighter">₹{order.total}</span>
                 </div>
               </div>
@@ -277,14 +370,6 @@ export default function OrderTrackingPage() {
           </motion.div>
         </div>
 
-        {/* Browser Sync Layer */}
-        {!notificationGranted && (
-          <div className="glass-panel border-white/5 bg-white/[0.01] rounded-[1.5rem] p-6 text-center">
-            <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.2em] leading-relaxed">
-              Enable hardware notification bridge to receive extraction alerts
-            </p>
-          </div>
-        )}
       </main>
     </div>
   )

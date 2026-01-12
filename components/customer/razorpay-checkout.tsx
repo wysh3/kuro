@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Loader2, AlertCircle } from 'lucide-react'
+import { AlertCircle } from 'lucide-react'
 import { RazorpayCheckoutOptions, RazorpayPaymentResponse } from '@/lib/razorpay/types'
 import { getRazorpayKeyId } from '@/lib/razorpay/config'
+import { Spinner } from '@/components/ui/spinner'
 
 interface RazorpayCheckoutProps {
   amount: number
@@ -110,7 +111,7 @@ export function RazorpayCheckout({
   if (!scriptLoaded) {
     return (
       <Button disabled className="w-full">
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <Spinner className="mr-2 h-4 w-4" />
         Loading payment gateway...
       </Button>
     )
@@ -133,7 +134,7 @@ export function RazorpayCheckout({
       >
         {(initiatingPayment || loading) ? (
           <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Spinner className="mr-2 h-4 w-4" />
             Processing Payment...
           </>
         ) : (

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Clock, CheckCircle2, LogOut, Loader2, BarChart3, Zap, Target, Activity } from 'lucide-react'
+import { Clock, CheckCircle2, LogOut, BarChart3, Zap, Target, Activity } from 'lucide-react'
 import { useKitchenOrders } from '@/hooks/use-kitchen-orders'
 import { Order, CampusStatus } from '@/lib/types'
 import { convertTimestampToISO, subscribeToCampusStatus } from '@/lib/firebase/db'
@@ -59,6 +59,16 @@ export default function KitchenPage() {
       if (newStatus === 'ready') {
         setNewOrderAlert(true)
         setTimeout(() => setNewOrderAlert(false), 3000)
+
+        // Notify customer
+        const order = orders.find(o => o.id === orderId)
+        if (order) {
+          fetch('/api/notify/ready', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orderId, status: 'ready', userId: order.userId })
+          }).catch(err => console.error('Notify error:', err))
+        }
       }
     } catch (error) {
       console.error('Failed to update order status:', error)
@@ -81,11 +91,11 @@ export default function KitchenPage() {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-6">
         <motion.div
-          animate={{ scale: [1, 1.1, 1], rotate: [0, 90, 0] }}
+          animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full"
         />
-        <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Initializing Mission Control</p>
+        <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Initializing Kitchen Console</p>
       </div>
     )
   }
@@ -93,7 +103,7 @@ export default function KitchenPage() {
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white/10 no-scrollbar relative">
 
-      {/* Sleek Floating Mission Header */}
+      {/* Sleek Floating Kitchen Header */}
       <header className={cn(
         "fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-700 w-[calc(100%-2rem)] max-w-7xl",
         isScrolled ? "top-4" : "top-6"
@@ -108,8 +118,8 @@ export default function KitchenPage() {
                 <Target className="w-6 h-6 text-black group-hover:scale-110 transition-transform" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-[11px] font-black tracking-[0.4em] uppercase leading-none text-white/90">MISSION CONTROL</h1>
-                <p className="text-[9px] font-bold text-white/30 mt-1.5 uppercase tracking-widest">UNIT // MRC OPS</p>
+                <h1 className="text-[11px] font-black tracking-[0.4em] uppercase leading-none text-white/90">KITCHEN CONSOLE</h1>
+                <p className="text-[9px] font-bold text-white/30 mt-1.5 uppercase tracking-widest">KITCHEN STAFF</p>
               </div>
             </div>
 
@@ -117,7 +127,7 @@ export default function KitchenPage() {
               {campusStatus && (
                 <div className="flex items-center gap-8">
                   <div className="flex flex-col">
-                    <span className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1.5">UNIT LOAD</span>
+                    <span className="text-[8px] font-black text-white/20 uppercase tracking-widest mb-1.5">KITCHEN LOAD</span>
                     <div className="flex items-center gap-2">
                       <div className={cn(
                         "w-2 h-2 rounded-full animate-pulse",
@@ -178,11 +188,11 @@ export default function KitchenPage() {
                 <div className="h-[1px] w-12 bg-white/10" />
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse shadow-[0_0_15px_#22c55e]" />
-                  <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">Systems Nominal</span>
+                  <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">System Online</span>
                 </div>
               </div>
               <h2 className="text-4xl sm:text-5xl font-black tracking-tighter uppercase leading-[0.8] text-gradient">
-                Kitchen Cockpit
+                Kitchen Dashboard
               </h2>
             </div>
 
@@ -215,28 +225,28 @@ export default function KitchenPage() {
         {/* Global Orders Feed Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <OrdersColumn
-            title="Extraction Queue"
+            title="Order Queue"
             orders={[]}
             accent="border-yellow-500"
             formatTime={formatTime}
             onUpdateStatus={handleUpdateStatus}
-            emptyText="No Pending Units"
+            emptyText="No Pending Orders"
           />
           <OrdersColumn
-            title="In Production"
+            title="In Preparation"
             orders={preparingOrders}
             accent="border-apple-blue shadow-[0_0_40px_rgba(0,122,255,0.1)]"
             formatTime={formatTime}
             onUpdateStatus={handleUpdateStatus}
-            emptyText="Production Idle"
+            emptyText="Kitchen Idle"
           />
           <OrdersColumn
-            title="Ready for Extraction"
+            title="Ready for Pickup"
             orders={readyOrders}
             accent="border-green-500 shadow-[0_0_40px_rgba(34,197,94,0.1)]"
             formatTime={formatTime}
             onUpdateStatus={handleUpdateStatus}
-            emptyText="Extraction Bay Clear"
+            emptyText="Pickup Area Clear"
           />
         </div>
       </main>
@@ -255,8 +265,8 @@ export default function KitchenPage() {
                 <CheckCircle2 className="w-6 h-6" />
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest leading-tight">Extraction Protocol</p>
-                <p className="text-lg font-black tracking-tight leading-tight">UNIT READY FOR DEPLOYMENT</p>
+                <p className="text-[10px] font-black uppercase tracking-widest leading-tight">Order Alert</p>
+                <p className="text-lg font-black tracking-tight leading-tight">ORDER READY FOR PICKUP</p>
               </div>
             </div>
           </motion.div>
@@ -351,7 +361,7 @@ function OrderCard({
       <CardHeader className="p-8 pb-6 border-b border-white/5 relative z-10">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Deployment ID</span>
+            <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Order ID</span>
             <div className="flex items-center gap-4">
               <CardTitle className="text-3xl font-black tracking-tighter uppercase">#{order.tokenNumber || order.id.slice(-4).toUpperCase()}</CardTitle>
               {order.status === 'preparing' && (
@@ -392,7 +402,7 @@ function OrderCard({
               </div>
             </div>
             <div className="text-right space-y-1">
-              <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] block">Mission Value</span>
+              <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em] block">Order Total</span>
               <span className="text-3xl font-black text-white tracking-tighter">₹{order.total}</span>
             </div>
           </div>
@@ -404,14 +414,14 @@ function OrderCard({
               onClick={() => onUpdateStatus(order.id, 'preparing')}
               className="w-full bg-white text-black hover:bg-white/90 h-14 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] shadow-premium transition-all active:scale-95 group/btn border-none"
             >
-              <Zap className="w-5 h-5 mr-3 group-hover/btn:scale-125 transition-transform" /> INITIATE PRODUCTION
+              <Zap className="w-5 h-5 mr-3 group-hover/btn:scale-125 transition-transform" /> START PREPARING
             </Button>
           ) || (order.status === 'preparing') && (
             <Button
               onClick={() => onUpdateStatus(order.id, 'ready')}
               className="w-full bg-green-500 text-black hover:bg-green-400 h-14 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] shadow-[0_0_40px_rgba(34,197,94,0.4)] transition-all active:scale-95 group/btn border-none"
             >
-              <CheckCircle2 className="w-5 h-5 mr-3 group-hover/btn:scale-125 transition-transform" /> UNIT COMPLETE
+              <CheckCircle2 className="w-5 h-5 mr-3 group-hover/btn:scale-125 transition-transform" /> FINISH PREPARATION
             </Button>
           ) || (order.status === 'ready') && (
             <Button

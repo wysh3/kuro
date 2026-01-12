@@ -17,19 +17,19 @@ export default function MealPlanDisplay({ plan, onAddToCart }: MealPlanDisplayPr
             <div className="grid grid-cols-3 gap-4">
                 <MetricCard
                     icon={<DollarSign className="w-4 h-4" />}
-                    label="TOTAL EXPORT"
+                    label="TOTAL COST"
                     value={`₹${plan.summary.totalCost}`}
                     accent="text-white"
                 />
                 <MetricCard
                     icon={<Zap className="w-4 h-4 text-apple-blue" />}
-                    label="AVG LOAD"
+                    label="AVG CALORIES"
                     value={`${plan.summary.avgCaloriesPerDay}`}
                     accent="text-apple-blue"
                 />
                 <MetricCard
                     icon={<TrendingUp className="w-4 h-4 text-green-500" />}
-                    label="PROTEIN SYNC"
+                    label="TOTAL PROTEIN"
                     value={`${plan.summary.proteinPerDay}G`}
                     accent="text-green-500"
                 />
@@ -38,7 +38,7 @@ export default function MealPlanDisplay({ plan, onAddToCart }: MealPlanDisplayPr
             {/* Daily Deployment Log */}
             <div className="space-y-6">
                 <div className="flex items-center gap-4 px-2">
-                    <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">DEPLOYMENT SCHEDULE</h3>
+                    <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">MEAL SCHEDULE</h3>
                     <div className="h-[1px] flex-1 bg-white/5" />
                 </div>
 
@@ -59,9 +59,9 @@ export default function MealPlanDisplay({ plan, onAddToCart }: MealPlanDisplayPr
                         </div>
 
                         <div className="space-y-3">
-                            <MealRow label="ALPHA MEAL" item={day.breakfast} onAddToCart={() => onAddToCart?.(day.breakfast.item)} />
-                            <MealRow label="BRAVO MEAL" item={day.lunch} onAddToCart={() => onAddToCart?.(day.lunch.item)} />
-                            {day.snack && <MealRow label="TANGO SNACK" item={day.snack} onAddToCart={() => onAddToCart?.(day.snack!.item)} />}
+                            <MealRow label="BREAKFAST" item={day.breakfast} onAddToCart={() => onAddToCart?.(day.breakfast.item)} />
+                            <MealRow label="LUNCH" item={day.lunch} onAddToCart={() => onAddToCart?.(day.lunch.item)} />
+                            {day.snack && <MealRow label="SNACK" item={day.snack} onAddToCart={() => onAddToCart?.(day.snack!.item)} />}
                         </div>
                     </motion.div>
                 ))}
@@ -74,7 +74,7 @@ export default function MealPlanDisplay({ plan, onAddToCart }: MealPlanDisplayPr
                         <Sparkles className="w-32 h-32 text-white" />
                     </div>
                     <div className="relative z-10">
-                        <h3 className="text-[10px] font-black text-apple-blue uppercase tracking-[0.4em] mb-6">STRATEGIC COUNSEL</h3>
+                        <h3 className="text-[10px] font-black text-apple-blue uppercase tracking-[0.4em] mb-6">NUTRITION TIPS</h3>
                         <ul className="space-y-4">
                             {plan.tips.map((tip, index) => (
                                 <li key={index} className="flex gap-6 text-sm font-medium text-white/50 leading-relaxed italic group">
@@ -122,7 +122,7 @@ function MealRow({ label, item, onAddToCart }: { label: string, item: any, onAdd
                     onClick={onAddToCart}
                     className="h-8 px-4 rounded-lg bg-white/5 border border-white/5 text-[9px] font-black text-white/40 uppercase tracking-[0.2em] hover:bg-white hover:text-black hover:border-white transition-all cursor-pointer"
                 >
-                    DEPLOY
+                    ADD TO CART
                 </button>
             </div>
         </div>

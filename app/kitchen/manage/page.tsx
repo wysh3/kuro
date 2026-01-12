@@ -74,11 +74,11 @@ export default function KitchenManagePage() {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-6">
         <motion.div
-          animate={{ scale: [1, 1.1, 1], rotate: [0, 90, 0] }}
+          animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
           className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full"
         />
-        <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Accessing Tactical Menu</p>
+        <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Accessing Menu Database</p>
       </div>
     )
   }
@@ -107,8 +107,8 @@ export default function KitchenManagePage() {
                 <Zap className="w-6 h-6 text-black group-hover:scale-110 transition-transform" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-[11px] font-black tracking-[0.4em] uppercase leading-none text-white/90">MENU CONSOLE</h1>
-                <p className="text-[9px] font-bold text-white/30 mt-1.5 uppercase tracking-widest">TACTICAL OVERRIDE</p>
+                <h1 className="text-[11px] font-black tracking-[0.4em] uppercase leading-none text-white/90">MENU MANAGEMENT</h1>
+                <p className="text-[9px] font-bold text-white/30 mt-1.5 uppercase tracking-widest">SYSTEM CONTROLS</p>
               </div>
             </div>
           </div>
@@ -148,21 +148,21 @@ export default function KitchenManagePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           <Card className="glass-panel border-white/5 rounded-[2rem] p-8 shadow-premium overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 blur-[50px] -z-10" />
-            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">ONLINE UNITS</p>
+            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">AVAILABLE ITEMS</p>
             <h3 className="text-5xl font-black text-white italic tracking-tighter">
               {menuItems.filter((i) => i.available).length}
             </h3>
           </Card>
           <Card className="glass-panel border-white/5 rounded-[2rem] p-8 shadow-premium overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-tesla-red/5 blur-[50px] -z-10" />
-            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">SUSPENDED UNITS</p>
+            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">UNAVAILABLE ITEMS</p>
             <h3 className="text-5xl font-black text-tesla-red italic tracking-tighter">
               {menuItems.filter((i) => !i.available).length}
             </h3>
           </Card>
           <Card className="glass-panel border-white/5 rounded-[2rem] p-8 shadow-premium overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-apple-blue/5 blur-[50px] -z-10" />
-            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">TOTAL CAPACITY</p>
+            <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">TOTAL ITEMS</p>
             <h3 className="text-5xl font-black text-apple-blue italic tracking-tighter">
               {menuItems.length}
             </h3>
@@ -175,7 +175,7 @@ export default function KitchenManagePage() {
             <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center">
               <Filter className="w-4 h-4 text-white/40" />
             </div>
-            <h2 className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">Subsystem Filtration</h2>
+            <h2 className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">Category Filter</h2>
           </div>
           <div className="flex flex-wrap gap-3">
             <Button
@@ -188,7 +188,7 @@ export default function KitchenManagePage() {
                   : "bg-white/5 text-white/40 hover:bg-white/10 hover:text-white"
               )}
             >
-              All Systems
+              All Categories
             </Button>
             {categories.map((category) => (
               <Button
@@ -242,12 +242,12 @@ export default function KitchenManagePage() {
 
                     <div className="pt-6 border-t border-white/5 flex items-center justify-between">
                       <div className="flex flex-col">
-                        <span className="text-[8px] font-black text-white/10 uppercase tracking-widest mb-1.5">UNIT STATUS</span>
+                        <span className="text-[8px] font-black text-white/10 uppercase tracking-widest mb-1.5">ITEM STATUS</span>
                         <span className={cn(
                           "text-[10px] font-black uppercase tracking-widest",
                           item.available ? "text-green-500" : "text-tesla-red"
                         )}>
-                          {item.available ? "Ready for Deployment" : "Suspended"}
+                          {item.available ? "In Stock" : "Out of Stock"}
                         </span>
                       </div>
                       <Button
@@ -260,7 +260,7 @@ export default function KitchenManagePage() {
                             : "bg-green-500/5 text-green-500 border-green-500/10 hover:bg-green-500 hover:text-white"
                         )}
                       >
-                        {item.available ? "SUSPEND" : "RESTORE"}
+                        {item.available ? "UNAVAILABLE" : "MAKE AVAILABLE"}
                       </Button>
                     </div>
                   </div>

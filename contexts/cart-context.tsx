@@ -21,6 +21,8 @@ interface CartContextType {
     setSelectedSlot: (slot: TimeSlot | null) => void;
     discountAmount: number;
     finalTotal: number;
+    isDrawerOpen: boolean;
+    setIsDrawerOpen: (open: boolean) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -28,6 +30,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     // Load cart from local storage on mount
     useEffect(() => {
@@ -87,7 +90,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             selectedSlot,
             setSelectedSlot,
             discountAmount,
-            finalTotal
+            finalTotal,
+            isDrawerOpen,
+            setIsDrawerOpen
         }}>
             {children}
         </CartContext.Provider>

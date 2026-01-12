@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Send, ArrowLeft, Plus, ShoppingCart, Check } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import MealPlanDisplay from '@/components/customer/meal-plan-display';
 import { MealPlanResponse } from '@/lib/gemini/meal-planner';
@@ -12,11 +13,11 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Activity, Shield, Zap, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { CartDrawer } from '@/components/customer/cart-drawer';
+import { Spinner } from '@/components/ui/spinner';
 
 export default function MealPlannerPage() {
     const router = useRouter();
-    const { addToCart, cart } = useCart();
+    const { addToCart, cart, setIsDrawerOpen } = useCart();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const [messages, setMessages] = useState<ChatMessage[]>([
@@ -28,7 +29,6 @@ export default function MealPlannerPage() {
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
-    const [showCart, setShowCart] = useState(false);
     const [pendingOrder, setPendingOrder] = useState<any>(null);
     const [suggestions, setSuggestions] = useState<string[]>([]);
 
@@ -162,7 +162,7 @@ export default function MealPlannerPage() {
         });
         toast.success(`Added ${item.name} to cart`);
         if (showCartAfter) {
-            setShowCart(true);
+            setIsDrawerOpen(true);
         }
     };
 
@@ -172,7 +172,7 @@ export default function MealPlannerPage() {
                 addItemToCart(item, false);
             });
             setPendingOrder(null);
-            setShowCart(true);
+            setIsDrawerOpen(true);
             toast.success('Order added to cart! Review and checkout when ready.');
         }
     };
@@ -302,34 +302,37 @@ export default function MealPlannerPage() {
                                 <ArrowLeft className="w-5 h-5 text-white/40" />
                             </button>
                             <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-xl bg-white shadow-premium flex items-center justify-center">
-                                    <Target className="w-5 h-5 text-black" />
+                                <div className="w-10 h-10 rounded-xl bg-white shadow-premium flex items-center justify-center overflow-hidden">
+                                    <Image
+                                        src="/logo.png"
+                                        alt="KURO Logo"
+                                        width={36}
+                                        height={36}
+                                        className="object-cover"
+                                    />
                                 </div>
                                 <div>
-                                    <h1 className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] leading-none">GENETIC PROTOCOL</h1>
-                                    <p className="text-xs font-black text-white mt-1 uppercase tracking-widest">AI NUTRITION OVERRIDE</p>
+                                    <h1 className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] leading-none">AI ASSISTANT</h1>
+                                    <p className="text-xs font-black text-white mt-1 uppercase tracking-widest">AI MEAL PLANNER</p>
                                 </div>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            <CartDrawer
-                                isOpen={showCart}
-                                onClose={() => setShowCart(false)}
-                                trigger={
-                                    <button className="relative w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all flex items-center justify-center group">
-                                        <ShoppingCart className="w-5 h-5 text-white/60 group-hover:text-white" />
-                                        {cart.length > 0 && (
-                                            <motion.div
-                                                initial={{ scale: 0 }}
-                                                animate={{ scale: 1 }}
-                                                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-black text-[10px] font-black rounded-lg border-2 border-black flex items-center justify-center shadow-premium"
-                                            >
-                                                {cart.reduce((acc, item) => acc + item.quantity, 0)}
-                                            </motion.div>
-                                        )}
-                                    </button>
-                                }
-                            />
+                            <button
+                                onClick={() => setIsDrawerOpen(true)}
+                                className="relative w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/10 transition-all flex items-center justify-center group"
+                            >
+                                <ShoppingCart className="w-5 h-5 text-white/60 group-hover:text-white" />
+                                {cart.length > 0 && (
+                                    <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-black text-[10px] font-black rounded-lg border-2 border-black flex items-center justify-center shadow-premium"
+                                    >
+                                        {cart.reduce((acc, item) => acc + item.quantity, 0)}
+                                    </motion.div>
+                                )}
+                            </button>
                             <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-xl border border-white/5">
                                 <div className="w-1.5 h-1.5 rounded-full bg-apple-blue animate-pulse shadow-[0_0_10px_rgba(0,122,255,0.8)]" />
                                 <span className="text-[9px] font-black text-white/60 uppercase tracking-widest">Neural Link Active</span>
@@ -338,7 +341,7 @@ export default function MealPlannerPage() {
                     </div>
                 </header>
 
-                {/* Deployment Log / Messages */}
+                {/* Chat History / Messages */}
                 <div className="flex-1 space-y-10 mt-32 mb-32 overflow-y-auto pb-4 custom-scrollbar">
                     <AnimatePresence mode="popLayout">
                         {messages.map((msg, i) => (
@@ -349,8 +352,14 @@ export default function MealPlannerPage() {
                                 className={`flex gap-6 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 {msg.role === 'assistant' && (
-                                    <div className="w-11 h-11 rounded-[1.2rem] bg-white shadow-premium flex-shrink-0 flex items-center justify-center mt-1 border border-white/10 group-hover:rotate-12 transition-transform duration-500">
-                                        <Zap className="w-5 h-5 text-black" />
+                                    <div className="w-11 h-11 rounded-[1.2rem] bg-white shadow-premium flex-shrink-0 flex items-center justify-center mt-1 border border-white/10 transition-transform duration-500 overflow-hidden">
+                                        <Image
+                                            src="/logo.png"
+                                            alt="KURO AI"
+                                            width={32}
+                                            height={32}
+                                            className="object-cover"
+                                        />
                                     </div>
                                 )}
 
@@ -382,7 +391,7 @@ export default function MealPlannerPage() {
                     <div ref={messagesEndRef} />
                 </div>
 
-                {/* Neural Input Interface */}
+                {/* Chat Input Interface */}
                 <div className="fixed bottom-0 left-0 right-0 p-8 bg-linear-to-t from-black via-black/80 to-transparent z-40">
                     <div className="max-w-3xl mx-auto space-y-4">
                         {/* Quick Suggestions */}
@@ -431,7 +440,7 @@ export default function MealPlannerPage() {
                                 disabled={loading || !input.trim()}
                                 className="w-20 h-20 rounded-[2rem] bg-white text-black hover:bg-white/90 shadow-premium transition-all active:scale-90 flex items-center justify-center p-0 border-none group"
                             >
-                                {loading ? <Activity className="w-8 h-8 animate-spin" /> : <Send className="w-8 h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
+                                {loading ? <Spinner className="w-8 h-8" /> : <Send className="w-8 h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
                             </Button>
                         </div>
                     </div>

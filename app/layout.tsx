@@ -47,9 +47,17 @@ export default function RootLayout({
             __html: `
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').catch(function(err) {
-                    console.log('Service worker registration failed:', err);
-                  });
+                  navigator.serviceWorker.register('/firebase-messaging-sw.js')
+                    .then(function(registration) {
+                      console.log('[FCM SW] Registered:', registration.scope);
+                      return navigator.serviceWorker.register('/sw.js');
+                    })
+                    .then(function(registration) {
+                      console.log('[Cache SW] Registered:', registration.scope);
+                    })
+                    .catch(function(err) {
+                      console.log('[SW] Registration failed:', err);
+                    });
                 });
               }
             `,
