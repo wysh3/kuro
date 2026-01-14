@@ -24,6 +24,17 @@ export default function CustomerPage() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [showHeader, setShowHeader] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
+
+  // Responsive default view mode
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 640
+      setViewMode(isMobile ? 'list' : 'grid')
+    }
+  }, [])
 
   useEffect(() => {
     setMounted(true)
@@ -33,13 +44,22 @@ export default function CustomerPage() {
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
+      const currentScrollY = window.scrollY
+      setIsScrolled(currentScrollY > 20)
+
+      // Hide header on scroll down, show on scroll up
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setShowHeader(false)
+      } else {
+        setShowHeader(true)
+      }
+      setLastScrollY(currentScrollY)
     }
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => {
       window.removeEventListener('scroll', handleScroll)
     }
-  }, [])
+  }, [lastScrollY])
 
   // Timer effect for currentTime
   useEffect(() => {
@@ -64,11 +84,11 @@ export default function CustomerPage() {
       <div className="fixed inset-0 bg-background z-[100] flex items-center justify-center">
         <motion.div
           initial={{ rotate: 0, scale: 1 }}
-          animate={{ 
+          animate={{
             rotate: 360,
             scale: [1, 1.1, 1]
           }}
-          transition={{ 
+          transition={{
             rotate: { duration: 1, repeat: Infinity, ease: "linear" },
             scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
           }}
@@ -97,8 +117,9 @@ export default function CustomerPage() {
 
       {/* Sleek Floating Header */}
       <header className={cn(
-        "fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-700 w-[calc(100%-2rem)] max-w-5xl",
-        isScrolled ? "top-4" : "top-6"
+        "fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 w-[calc(100%-2rem)] max-w-5xl",
+        isScrolled ? "top-4 scale-[0.98]" : "top-6 scale-100",
+        !showHeader && "-translate-y-32 opacity-0"
       )}>
         <div className={cn(
           "glass-panel rounded-2xl px-6 py-3 flex items-center justify-between transition-all duration-700",
@@ -178,10 +199,10 @@ export default function CustomerPage() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-32 pb-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          {/* Dashboard Header - Simplified Structure */}
-          <div className="space-y-12">
+      <main className="pt-24 pb-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-12">
+          {/* Dashboard Header - Immersive Landing Fold */}
+          <div className="min-h-0 sm:min-h-[calc(100vh-14rem)] flex flex-col justify-center py-6 sm:py-12 space-y-8 sm:space-y-12">
             {/* Unified Hero Area */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
               {/* Immersive Greeting */}
@@ -197,10 +218,12 @@ export default function CustomerPage() {
                     <span className="text-label-xs font-black text-white/30 uppercase tracking-[0.5em]">Campus Dining Active</span>
                   </div>
 
-                  <h2 className="text-6xl sm:text-8xl font-black tracking-tighter text-white uppercase leading-[0.85] mb-8 overflow-hidden">
-                    <div className="flex flex-wrap items-baseline gap-2">
-                      <InteractiveGreeting firstName={firstName} />
-                      <span className="text-gradient">{firstName}</span>
+                  <h2 className="text-3xl sm:text-7xl font-black tracking-tighter text-white uppercase leading-none mb-4 sm:mb-8 overflow-hidden">
+                    <div className="flex flex-col items-start min-h-[2.2em] gap-0 sm:gap-1">
+                      <div className="h-[1.1em] flex items-end">
+                        <InteractiveGreeting firstName={firstName} />
+                      </div>
+                      <span className="text-gradient leading-none">{firstName}</span>
                     </div>
                   </h2>
                   <div className="flex flex-wrap items-center gap-4">
@@ -220,115 +243,82 @@ export default function CustomerPage() {
 
               {/* Status Integration */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.25 }}
                 className="lg:col-span-5"
               >
-                <CrowdStatusCard />
+                <div className="scale-90 sm:scale-100 origin-left sm:origin-center">
+                  <CrowdStatusCard />
+                </div>
               </motion.div>
             </div>
 
             {/* Dashboard Briefing Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="flex overflow-x-auto sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 scrollbar-none snap-x snap-mandatory pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                className="glass-card rounded-[2rem] p-8 border-white/5 shadow-premium group hover:bg-white/[0.03] transition-all"
+                className="min-w-[75vw] sm:min-w-0 snap-center glass-card rounded-[2rem] p-5 sm:p-8 border-white/5 shadow-premium group hover:bg-white/[0.03] transition-all"
               >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-apple-blue/10 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-apple-blue" />
+                <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-apple-blue/10 flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-apple-blue" />
                   </div>
-                  <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Kitchen Efficiency</h4>
+                  <h4 className="text-[9px] sm:text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Kitchen Efficiency</h4>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-3xl font-black text-white italic tracking-tighter">98% Faster</p>
-                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest leading-relaxed">The kitchen is operating at peak speed today. Minimal wait times expected.</p>
+                  <p className="text-xl sm:text-3xl font-black text-white italic tracking-tighter">98% Faster</p>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-white/20 uppercase tracking-widest leading-relaxed">System operating at peak speed.</p>
                 </div>
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.4 }}
-                className="glass-card rounded-[2rem] p-8 border-white/5 shadow-premium group hover:bg-white/[0.03] transition-all"
+                className="min-w-[75vw] sm:min-w-0 snap-center glass-card rounded-[2rem] p-5 sm:p-8 border-white/5 shadow-premium group hover:bg-white/[0.03] transition-all"
               >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-green-500" />
+                <div className="flex items-center gap-3 mb-3 sm:mb-4">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-green-500" />
                   </div>
-                  <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Today's Special</h4>
+                  <h4 className="text-[9px] sm:text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Special</h4>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-3xl font-black text-white italic tracking-tighter text-gradient">POKE BOWL</p>
-                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest leading-relaxed">Our most loved dish today. Fresh, healthy, and ready in minutes.</p>
+                  <p className="text-xl sm:text-3xl font-black text-white italic tracking-tighter text-gradient">POKE BOWL</p>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-white/20 uppercase tracking-widest leading-relaxed">Fresh and healthy choice.</p>
                 </div>
               </motion.div>
 
-
+              <motion.button
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.5 }}
+                onClick={() => router.push('/customer/meal-planner')}
+                className="min-w-[75vw] sm:min-w-0 snap-center w-full text-left group relative overflow-hidden glass-card rounded-[2rem] p-5 sm:p-8 border-white/5 shadow-premium hover:bg-white/[0.03] transition-all"
+              >
+                <div className="absolute inset-0 bg-radial-at-tr from-apple-blue/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                <div className="flex items-center gap-3 mb-3 sm:mb-4 relative z-10">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-apple-blue/10 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-apple-blue" />
+                  </div>
+                  <div>
+                    <h4 className="text-[9px] sm:text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">AI Planner</h4>
+                  </div>
+                </div>
+                <div className="space-y-1 relative z-10">
+                  <p className="text-xl sm:text-3xl font-black text-white italic tracking-tighter uppercase text-gradient">Smart Plan</p>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-white/20 uppercase tracking-widest leading-relaxed">Calibrated for your goals.</p>
+                </div>
+              </motion.button>
             </div>
 
             {/* Intelligence Layer */}
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6">
               <RushWarningBanner />
             </div>
-
-            {/* AI Meal Planner Card - Re-engineered */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-            >
-              <button
-                onClick={() => router.push('/customer/meal-planner')}
-                className="w-full text-left group relative overflow-hidden glass-card rounded-[3rem] p-8 sm:p-14 transition-all duration-700 hover:ring-1 hover:ring-white/20 shadow-premium"
-              >
-                <div className="absolute inset-0 bg-radial-at-tr from-apple-blue/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="absolute bottom-0 right-0 w-64 h-64 bg-apple-blue/10 blur-[100px] -z-10 translate-x-1/2 translate-y-1/2 group-hover:translate-x-1/4 group-hover:translate-y-1/4 transition-transform duration-1000" />
-
-                <div className="flex flex-col sm:flex-row items-start justify-between gap-12 relative z-10">
-                  <div className="flex-1 space-y-8">
-                    <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 rounded-[1.5rem] bg-white shadow-premium flex items-center justify-center text-black transition-transform duration-700">
-                        <Sparkles className="w-8 h-8" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-4">
-                          <h3 className="text-4xl font-black text-white uppercase tracking-tighter">AI NAVIGATOR</h3>
-                          <span className="px-3 py-1 text-[9px] font-black bg-apple-blue text-white rounded-md uppercase tracking-[0.2em]">S-CLASS AI</span>
-                        </div>
-                        <p className="text-white/30 font-bold text-xs tracking-[0.4em] uppercase mt-1">Core Neural Engine: GEMINI 3.0</p>
-                      </div>
-                    </div>
-
-                    <p className="text-2xl text-white/60 font-medium leading-relaxed max-w-2xl italic tracking-tight">
-                      "Precision fueling engineered for the modern lifestyle. Calibrate your nutritional goals with predictive AI intelligence."
-                    </p>
-
-                    <div className="flex flex-wrap gap-3">
-                      {['5-DAY STREAK', 'HP MODE ACTIVE', 'ENERGY CRITICAL', 'METABOLIC SYNC'].map(tag => (
-                        <div key={tag} className="px-5 py-2 text-[10px] font-black bg-white/5 border border-white/5 rounded-xl text-white/30 group-hover:text-white/90 group-hover:border-white/20 group-hover:bg-white/10 transition-all tracking-widest">
-                          {tag}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="hidden md:block">
-                    <div className="w-48 h-48 rounded-full border border-white/5 flex items-center justify-center relative">
-                      <motion.div
-                        animate={{ opacity: [0.4, 0.8, 0.4] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute inset-2 border-t-2 border-apple-blue/40 rounded-full"
-                      />
-                      <Sparkles className="w-16 h-16 text-white/10 group-hover:text-white/40 transition-colors duration-500" />
-                    </div>
-                  </div>
-                </div>
-              </button>
-            </motion.div>
           </div>
 
           {/* Active Orders Section */}
@@ -338,9 +328,45 @@ export default function CustomerPage() {
             <div className="flex items-center justify-between px-2">
               <h2 className="text-label-sm font-black text-white/20 tracking-[0.5em] uppercase">Selection Protocol</h2>
               <div className="h-[1px] flex-1 bg-white/5 mx-8" />
-              <Button variant="ghost" size="sm" className="text-label-xs text-white/40 hover:text-white uppercase tracking-widest">View Grid</Button>
+              <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode('grid')}
+                  className={cn(
+                    "h-8 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all duration-300",
+                    viewMode === 'grid' ? "bg-white text-black shadow-premium" : "text-white/40 hover:text-white"
+                  )}
+                >
+                  GRID
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setViewMode('list')}
+                  className={cn(
+                    "h-8 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all duration-300",
+                    viewMode === 'list' ? "bg-white text-black shadow-premium" : "text-white/40 hover:text-white"
+                  )}
+                >
+                  LIST
+                </Button>
+              </div>
             </div>
-            <ProductMenu onAddToCart={addToCart} />
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={viewMode}
+                initial={{ opacity: 0, scale: 0.96, y: 15, filter: "blur(8px)" }}
+                animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, scale: 1.02, y: -10, filter: "blur(8px)" }}
+                transition={{
+                  duration: 0.4,
+                  ease: [0.23, 1, 0.32, 1], // "Snappier-Fluid" Physics
+                }}
+              >
+                <ProductMenu onAddToCart={addToCart} viewMode={viewMode} isHeaderVisible={showHeader} />
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
       </main>

@@ -70,17 +70,8 @@ export default function KitchenManagePage() {
   const categories = Array.from(new Set(menuItems.map((item) => item.category)))
   const filteredItems = filterCategory ? menuItems.filter((item) => item.category === filterCategory) : menuItems
 
-  if (loading || authLoading) {
-    return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-6">
-        <motion.div
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full"
-        />
-        <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Accessing Menu Database</p>
-      </div>
-    )
+  if (authLoading) {
+    return <div className="min-h-screen bg-black" />
   }
 
   return (

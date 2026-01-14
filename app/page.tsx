@@ -79,16 +79,8 @@ export default function LoginPage() {
 
   const isRedirecting = (user && userProfile) || (typeof window !== 'undefined' && localStorage.getItem("user"))
 
-  if (!mounted || loading || isRedirecting) {
-    return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-black">
-        <motion.div
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full shadow-[0_0_30px_rgba(255,255,255,0.1)]"
-        />
-      </div>
-    )
+  if (!mounted || isRedirecting) {
+    return <div className="min-h-screen bg-black" />
   }
 
   return (

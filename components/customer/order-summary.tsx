@@ -293,7 +293,7 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
               >
                 {loading ? (
                   <div className="flex items-center gap-3">
-                    <Spinner className="w-4 h-4" />
+                    <div className="w-5 h-5 border-2 border-black/10 border-t-black rounded-full animate-spin" />
                     CALIBRATING...
                   </div>
                 ) : (

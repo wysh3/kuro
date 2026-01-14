@@ -37,7 +37,7 @@ export default function OrderTrackingPage() {
     if (typeof window !== 'undefined') {
       const status = getNotificationPermissionStatus()
       setNotificationStatus(status)
-      
+
       const justPlacedOrder = searchParams.get('justPlaced')
       if (justPlacedOrder === 'true' && status === 'default') {
         requestNotifications()
@@ -52,16 +52,16 @@ export default function OrderTrackingPage() {
   const requestNotifications = async () => {
     if (requesting) return
     setRequesting(true)
-    
+
     try {
       const permission = await Notification.requestPermission()
       setNotificationStatus(permission)
       console.log('[OrderPage] Permission result:', permission)
-      
+
       if (permission === 'granted') {
         setNotificationGranted(true)
         setNotificationEnabled(true)
-        
+
         if (user) {
           requestNotificationPermission(user.uid).then(token => {
             if (token) {
@@ -71,7 +71,7 @@ export default function OrderTrackingPage() {
             console.error('[OrderPage] Token request failed:', err)
           })
         }
-        
+
         setShowNotificationPrompt(true)
         setTimeout(() => {
           setShowNotificationPrompt(false)
@@ -87,16 +87,7 @@ export default function OrderTrackingPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-6">
-        <motion.div
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full"
-        />
-        <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Checking Order Status</p>
-      </div>
-    )
+    return <div className="min-h-screen bg-black" />
   }
 
   if (error || !order) {

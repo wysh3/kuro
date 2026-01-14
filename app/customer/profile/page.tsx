@@ -102,15 +102,8 @@ export default function CustomerProfilePage() {
         fetchOrders()
     }, [user, authLoading])
 
-    if (authLoading || loading) {
-        return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <div className="animate-pulse flex flex-col items-center gap-4">
-                    <div className="w-12 h-12 bg-primary/20 rounded-full" />
-                    <p className="text-sm text-muted-foreground">Fetching your profile data...</p>
-                </div>
-            </div>
-        )
+    if (authLoading) {
+        return <div className="min-h-screen bg-black" />
     }
 
     if (!user) {
@@ -414,9 +407,9 @@ export default function CustomerProfilePage() {
                         <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20">ORDER HISTORY</h3>
                         <div className="h-[1px] flex-1 mx-10 bg-white/5" />
                         {orders.length > 3 && (
-                            <Button 
+                            <Button
                                 onClick={() => router.push('/customer/orders')}
-                                variant="ghost" 
+                                variant="ghost"
                                 className="text-[9px] font-black text-apple-blue hover:text-white uppercase tracking-widest"
                             >
                                 View All

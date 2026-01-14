@@ -110,9 +110,8 @@ export function RazorpayCheckout({
 
   if (!scriptLoaded) {
     return (
-      <Button disabled className="w-full">
-        <Spinner className="mr-2 h-4 w-4" />
-        Loading payment gateway...
+      <Button disabled className="w-full h-16 rounded-[1.5rem] bg-white/5 border-white/5 text-[10px] font-black uppercase tracking-widest">
+        SECURE LINKING...
       </Button>
     )
   }
@@ -129,16 +128,15 @@ export function RazorpayCheckout({
       <Button
         onClick={handlePayment}
         disabled={disabled || initiatingPayment || loading}
-        className="w-full"
-        size="lg"
+        className="w-full h-16 bg-white text-black hover:bg-white/90 rounded-[1.5rem] text-[11px] font-black uppercase tracking-[0.2em] shadow-premium active:scale-95 transition-all border-none"
       >
         {(initiatingPayment || loading) ? (
-          <>
-            <Spinner className="mr-2 h-4 w-4" />
-            Processing Payment...
-          </>
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-black/10 border-t-black rounded-full animate-spin" />
+            PROCESSING...
+          </div>
         ) : (
-          `Pay ₹${amount}`
+          `INITIALIZE ₹${amount}`
         )}
       </Button>
     </div>
