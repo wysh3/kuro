@@ -140,21 +140,21 @@ export default function KitchenManagePage() {
           <Card className="glass-panel border-white/5 rounded-[2rem] p-8 shadow-premium overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/5 blur-[50px] -z-10" />
             <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">AVAILABLE ITEMS</p>
-            <h3 className="text-5xl font-black text-white italic tracking-tighter">
+            <h3 className="text-5xl font-black text-white tracking-tighter">
               {menuItems.filter((i) => i.available).length}
             </h3>
           </Card>
           <Card className="glass-panel border-white/5 rounded-[2rem] p-8 shadow-premium overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-tesla-red/5 blur-[50px] -z-10" />
             <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">UNAVAILABLE ITEMS</p>
-            <h3 className="text-5xl font-black text-tesla-red italic tracking-tighter">
+            <h3 className="text-5xl font-black text-tesla-red tracking-tighter">
               {menuItems.filter((i) => !i.available).length}
             </h3>
           </Card>
           <Card className="glass-panel border-white/5 rounded-[2rem] p-8 shadow-premium overflow-hidden relative">
             <div className="absolute top-0 right-0 w-32 h-32 bg-apple-blue/5 blur-[50px] -z-10" />
             <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em] mb-4">TOTAL ITEMS</p>
-            <h3 className="text-5xl font-black text-apple-blue italic tracking-tighter">
+            <h3 className="text-5xl font-black text-apple-blue tracking-tighter">
               {menuItems.length}
             </h3>
           </Card>
@@ -220,8 +220,8 @@ export default function KitchenManagePage() {
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
                         <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">{item.category}</span>
-                        <h4 className="text-2xl font-black italic tracking-tighter text-white uppercase leading-none">{item.name}</h4>
-                        <p className="text-xl font-bold text-white/60 tracking-tighter italic">₹{item.price}</p>
+                        <h4 className="text-2xl font-black tracking-tighter text-white uppercase leading-none">{item.name}</h4>
+                        <p className="text-xl font-bold text-white/60 tracking-tighter">₹{item.price}</p>
                       </div>
                       <div className={cn(
                         "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",

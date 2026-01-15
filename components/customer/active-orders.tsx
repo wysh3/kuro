@@ -92,8 +92,8 @@ export function ActiveOrders() {
                                             )} />
                                         </div>
                                         <div>
-                                            <p className="text-[7px] font-black text-white/10 uppercase tracking-[0.4em] mb-1">UNIT ID</p>
-                                            <p className="text-sm font-black text-white uppercase tracking-tighter">#{order.id.slice(-6).toUpperCase()}</p>
+                                            <p className="text-[7px] font-black text-white/10 uppercase tracking-[0.4em] mb-1">ORDER ID</p>
+                                            <p className="text-2xl font-black text-white uppercase tracking-tight">#{order.tokenNumber || order.id.slice(-4).toUpperCase()}</p>
                                         </div>
                                     </div>
 
