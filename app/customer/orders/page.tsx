@@ -47,12 +47,8 @@ export default function OrdersPage() {
         fetchOrders()
     }, [user, authLoading])
 
-    if (authLoading || loading) {
-        return (
-            <div className="min-h-screen bg-black flex items-center justify-center">
-                <Spinner className="w-8 h-8 text-white/20" />
-            </div>
-        )
+    if (authLoading) {
+        return <div className="min-h-screen bg-black" />
     }
 
     return (
@@ -100,8 +96,8 @@ export default function OrdersPage() {
                         <div className="flex items-center gap-4 px-2 mb-10">
                             <h3 className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em]">RECENT ORDERS</h3>
                             <div className="h-[1px] flex-1 bg-white/5" />
-                            <Button 
-                                variant="ghost" 
+                            <Button
+                                variant="ghost"
                                 className="text-[9px] font-black text-white/20 hover:text-red-500 uppercase tracking-widest"
                             >
                                 Clear History

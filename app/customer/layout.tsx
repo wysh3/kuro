@@ -28,42 +28,15 @@ export default function CustomerLayout({
     const isOrderPage = pathname.includes('/order/')
     const isMealPlanner = pathname.includes('/meal-planner')
     const showNav = !isOrderPage && !isMealPlanner && mounted
-    const showFloatingCart = !isOrderPage && mounted
-
     return (
         <div className="relative min-h-screen">
-            <main className="pb-20 md:pb-0">
+            <main className="pb-40 md:pb-0">
                 {children}
             </main>
 
             <CartDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
 
-            {
-                showFloatingCart && (
-                    <div className="fixed bottom-24 right-6 z-40 md:hidden">
-                        <button
-                            onClick={() => setIsDrawerOpen(true)}
-                            className="relative w-14 h-14 bg-white rounded-2xl shadow-[0_0_30px_rgba(255,255,255,0.2)] flex items-center justify-center group active:scale-90 transition-transform"
-                        >
-                            <ShoppingBag className="w-6 h-6 text-black" />
-                            <AnimatePresence>
-                                {itemCount > 0 && (
-                                    <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        exit={{ scale: 0 }}
-                                        className="absolute -top-2 -right-2 w-6 h-6 bg-tesla-red border-2 border-black rounded-lg flex items-center justify-center text-[10px] font-black text-white"
-                                    >
-                                        {itemCount}
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
-                        </button>
-                    </div>
-                )
-            }
-
             {showNav && <BottomNav />}
-        </div >
+        </div>
     )
 }

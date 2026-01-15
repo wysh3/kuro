@@ -23,14 +23,13 @@ export function InteractiveGreeting({ firstName }: InteractiveGreetingProps) {
     const baseGreeting = getGreeting()
     const hour = new Date().getHours()
     const phrases = useMemo(() => [
-        "Kitchen ready",
-        "Fresh orders coming",
-        "Chef's choice today",
         "What's cooking",
         "Hungry yet",
-        "Food awaits",
         "Order up",
-        "Fuel your day",
+        "Stay fresh",
+        "Fuel up",
+        "Food awaits",
+        "Kitchen active",
     ], [baseGreeting, hour, firstName])
 
     useEffect(() => {

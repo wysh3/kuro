@@ -305,17 +305,17 @@ export default function MealPlannerPage() {
                             >
                                 <ArrowLeft className="w-5 h-5 text-white/40" />
                             </button>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-xl bg-white shadow-premium flex items-center justify-center overflow-hidden">
-                                        <Image
-                                            src="/logo.png"
-                                            alt="KURO Logo"
-                                            width={36}
-                                            height={36}
-                                            className="object-cover"
-                                            loading="eager"
-                                        />
-                                    </div>
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 rounded-xl bg-white shadow-premium flex items-center justify-center overflow-hidden">
+                                    <Image
+                                        src="/logo_light_mode.png"
+                                        alt="KURO Logo"
+                                        width={36}
+                                        height={36}
+                                        className="object-cover"
+                                        loading="eager"
+                                    />
+                                </div>
                                 <div>
                                     <h1 className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] leading-none">AI ASSISTANT</h1>
                                     <p className="text-xs font-black text-white mt-1 uppercase tracking-widest">AI MEAL PLANNER</p>
@@ -359,7 +359,7 @@ export default function MealPlannerPage() {
                                 {msg.role === 'assistant' && (
                                     <div className="w-11 h-11 rounded-[1.2rem] bg-white shadow-premium flex-shrink-0 flex items-center justify-center mt-1 border border-white/10 transition-transform duration-500 overflow-hidden">
                                         <Image
-                                            src="/logo.png"
+                                            src="/logo_light_mode.png"
                                             alt="KURO AI"
                                             width={32}
                                             height={32}
@@ -446,7 +446,13 @@ export default function MealPlannerPage() {
                                 disabled={loading || !input.trim()}
                                 className="w-20 h-20 rounded-[2rem] bg-white text-black hover:bg-white/90 shadow-premium transition-all active:scale-90 flex items-center justify-center p-0 border-none group"
                             >
-                                {loading ? <Spinner className="w-8 h-8" /> : <Send className="w-8 h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
+                                {loading ? (
+                                    <div className="w-8 h-8 flex items-center justify-center">
+                                        <div className="w-5 h-5 border-2 border-black/10 border-t-black rounded-full animate-spin" />
+                                    </div>
+                                ) : (
+                                    <Send className="w-8 h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                )}
                             </Button>
                         </div>
                     </div>

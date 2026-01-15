@@ -13,7 +13,7 @@ export async function requestNotificationPermission(userId: string): Promise<str
 
     try {
         const permissionStatus = getNotificationPermissionStatus()
-        
+
         if (permissionStatus === 'denied') {
             console.warn('[Notifications] Permission already denied')
             return null
@@ -25,7 +25,7 @@ export async function requestNotificationPermission(userId: string): Promise<str
 
         console.log('[Notifications] Requesting permission...')
         const permission = await Notification.requestPermission()
-        
+
         if (permission !== 'granted') {
             console.warn('[Notifications] Permission not granted:', permission)
             return null
@@ -51,15 +51,15 @@ export async function requestNotificationPermission(userId: string): Promise<str
 
         if (token) {
             console.log('[Notifications] FCM Token received:', token.substring(0, 20) + '...')
-            
+
             const db = getFirebaseDB()
             const userRef = doc(db, 'users', userId)
             const userDoc = await getDoc(userRef)
-            
+
             if (userDoc.exists()) {
                 const userData = userDoc.data()
                 const existingTokens = userData.fcmTokens || []
-                
+
                 if (!existingTokens.includes(token)) {
                     await updateDoc(userRef, {
                         fcmTokens: arrayUnion(token),
@@ -70,7 +70,7 @@ export async function requestNotificationPermission(userId: string): Promise<str
                     console.log('[Notifications] Token already exists in user profile')
                 }
             }
-            
+
             return token
         } else {
             console.warn('[Notifications] No token returned from FCM')
@@ -78,12 +78,12 @@ export async function requestNotificationPermission(userId: string): Promise<str
     } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : String(error)
         console.error('[Notifications] Error getting permission:', errorMessage)
-        
+
         if (errorMessage.includes('failed-service-worker-registration')) {
             console.error('[Notifications] Service worker not registered. Please refresh the page.')
         }
     }
-    
+
     return null
 }
 
@@ -107,21 +107,21 @@ export function onMessageListener(): Promise<unknown> | null {
     return new Promise((resolve) => {
         onMessage(messaging, (payload) => {
             console.log('[Notifications] Foreground message received:', payload)
-            
+
             if (Notification.permission === 'granted') {
                 const { notification } = payload
                 if (notification) {
                     navigator.serviceWorker.ready.then((registration) => {
                         registration.showNotification(notification.title || 'KURO', {
                             body: notification.body,
-                            icon: '/logo.png',
-                            badge: '/logo.png',
+                            icon: '/logo_light_mode.png',
+                            badge: '/logo_light_mode.png',
                             tag: 'foreground-notification'
                         })
                     })
                 }
             }
-            
+
             resolve(payload)
         })
     })

@@ -37,7 +37,7 @@ export default function OrderTrackingPage() {
     if (typeof window !== 'undefined') {
       const status = getNotificationPermissionStatus()
       setNotificationStatus(status)
-      
+
       const justPlacedOrder = searchParams.get('justPlaced')
       if (justPlacedOrder === 'true' && status === 'default') {
         requestNotifications()
@@ -52,16 +52,16 @@ export default function OrderTrackingPage() {
   const requestNotifications = async () => {
     if (requesting) return
     setRequesting(true)
-    
+
     try {
       const permission = await Notification.requestPermission()
       setNotificationStatus(permission)
       console.log('[OrderPage] Permission result:', permission)
-      
+
       if (permission === 'granted') {
         setNotificationGranted(true)
         setNotificationEnabled(true)
-        
+
         if (user) {
           requestNotificationPermission(user.uid).then(token => {
             if (token) {
@@ -71,7 +71,7 @@ export default function OrderTrackingPage() {
             console.error('[OrderPage] Token request failed:', err)
           })
         }
-        
+
         setShowNotificationPrompt(true)
         setTimeout(() => {
           setShowNotificationPrompt(false)
@@ -87,16 +87,7 @@ export default function OrderTrackingPage() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-6">
-        <motion.div
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full"
-        />
-        <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Checking Order Status</p>
-      </div>
-    )
+    return <div className="min-h-screen bg-black" />
   }
 
   if (error || !order) {
@@ -117,10 +108,10 @@ export default function OrderTrackingPage() {
   }
 
   const statusSteps = [
-    { key: 'pending', label: 'Order Received', icon: CheckCircle2 },
-    { key: 'kitchen_received', label: 'Order Confirmed', icon: Clock },
+    { key: 'kitchen_received', label: 'Order Confirmed', icon: CheckCircle2 },
     { key: 'preparing', label: 'Preparing Order', icon: Clock },
-    { key: 'ready', label: 'Ready for Pickup', icon: CheckCircle2 },
+    { key: 'ready', label: 'Ready for Pickup', icon: Bell },
+    { key: 'completed', label: 'Order Handed Over', icon: CheckCircle2 },
   ]
 
   const currentStepIndex = statusSteps.findIndex((s) => s.key === order.status)
@@ -206,12 +197,13 @@ export default function OrderTrackingPage() {
           )}
         </AnimatePresence>
 
-        <AnimatePresence>
-          {isReady && (
+        <AnimatePresence mode="wait">
+          {order.status === 'ready' && (
             <motion.div
+              key="ready-banner"
               initial={{ y: -20, opacity: 0, scale: 0.95 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
               className="glass-panel border-green-500/20 bg-green-500/[0.03] rounded-[2.5rem] p-8 relative overflow-hidden shadow-[0_0_50px_rgba(34,197,94,0.15)]"
             >
               <div className="absolute top-0 right-0 w-48 h-48 bg-green-500/10 rounded-full blur-[80px] -mr-24 -mt-24" />
@@ -222,6 +214,25 @@ export default function OrderTrackingPage() {
                 <div>
                   <h3 className="text-xl font-black text-white uppercase tracking-tight">READY FOR PICKUP</h3>
                   <p className="text-[11px] text-green-500 font-bold uppercase tracking-[0.2em] mt-1">Head to the pickup counter now</p>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {order.status === 'completed' && (
+            <motion.div
+              key="completed-banner"
+              initial={{ y: 20, opacity: 0, scale: 0.95 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              className="glass-panel border-white/10 bg-white/[0.02] rounded-[2.5rem] p-8 relative overflow-hidden shadow-premium"
+            >
+              <div className="flex items-center gap-6 relative z-10">
+                <div className="w-16 h-16 rounded-[1.5rem] bg-white flex items-center justify-center shadow-premium">
+                  <CheckCircle2 className="w-8 h-8 text-black" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-black text-white uppercase tracking-tight">ORDER PICKED UP</h3>
+                  <p className="text-[11px] text-white/40 font-bold uppercase tracking-[0.2em] mt-1">Hope you enjoy your meal!</p>
                 </div>
               </div>
             </motion.div>

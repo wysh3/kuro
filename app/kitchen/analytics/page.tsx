@@ -74,17 +74,8 @@ export default function KitchenAnalyticsPage() {
         fetchOrders()
     }, [])
 
-    if (authLoading || loading) {
-        return (
-            <div className="min-h-screen bg-black flex flex-col items-center justify-center space-y-6">
-                <motion.div
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                    className="w-12 h-12 border-2 border-white/10 border-t-white rounded-full"
-                />
-                <p className="text-[10px] font-black text-white/30 tracking-[0.4em] uppercase">Generating Business Insights</p>
-            </div>
-        )
+    if (authLoading) {
+        return <div className="min-h-screen bg-black" />
     }
 
     const today = new Date()
@@ -221,7 +212,7 @@ export default function KitchenAnalyticsPage() {
                         <CardHeader className="p-8 pb-0 flex flex-row items-center justify-between border-b border-white/5">
                             <div className="space-y-1">
                                 <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">Traffic Analysis</span>
-                                <CardTitle className="text-xl font-black italic tracking-tighter uppercase text-white">Hourly Order Volume</CardTitle>
+                                <CardTitle className="text-xl font-black tracking-tighter uppercase text-white">Hourly Order Volume</CardTitle>
                             </div>
                             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                                 <Activity className="w-5 h-5 text-apple-blue" />
@@ -280,7 +271,7 @@ export default function KitchenAnalyticsPage() {
                         <CardHeader className="p-8 pb-0 flex flex-row items-center justify-between border-b border-white/5">
                             <div className="space-y-1">
                                 <span className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">Sales Data</span>
-                                <CardTitle className="text-xl font-black italic tracking-tighter uppercase text-white">Most Popular Items</CardTitle>
+                                <CardTitle className="text-xl font-black tracking-tighter uppercase text-white">Most Popular Items</CardTitle>
                             </div>
                             <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                                 <Target className="w-5 h-5 text-tesla-red" />
@@ -388,7 +379,7 @@ function MetricCard({ title, value, icon, subValue, accent, glowColor }: { title
                 <div className="space-y-4">
                     <div className="space-y-1">
                         <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.3em]">{title}</p>
-                        <p className={cn("text-4xl font-black italic tracking-tighter leading-none transition-all", accent)}>{value}</p>
+                        <p className={cn("text-4xl font-black tracking-tighter leading-none transition-all", accent)}>{value}</p>
                     </div>
                     <div className="h-[1px] w-full bg-white/5" />
                     <p className="text-[8px] font-black text-white/10 uppercase tracking-[0.2em]">{subValue}</p>
