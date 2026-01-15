@@ -42,10 +42,10 @@ export function ActiveOrders() {
 
     const getStatusLabel = (status: Order['status']) => {
         switch (status) {
-            case 'kitchen_received': return 'Confirmed! 🎟️'
-            case 'preparing': return 'Chef is at work... 🍳'
-            case 'ready': return 'Hooray! Ready! 🥳'
-            case 'completed': return 'Picked Up'
+            case 'kitchen_received': return 'Confirmed'
+            case 'preparing': return 'Preparing'
+            case 'ready': return 'Ready for Pickup'
+            case 'completed': return 'Handed Over'
             default: return status
         }
     }
@@ -62,7 +62,7 @@ export function ActiveOrders() {
             <div className="flex items-center justify-between px-2">
                 <h2 className="text-label-sm font-black text-white/20 tracking-[0.5em] uppercase">Active Orders</h2>
                 <div className="h-[1px] flex-1 bg-white/5 mx-6" />
-                <span className="text-[10px] font-black text-apple-blue uppercase tracking-widest">{orders.length} ACTIVE</span>
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">{orders.length} ACTIVE</span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -70,75 +70,75 @@ export function ActiveOrders() {
                     {orders.map((order, idx) => (
                         <motion.button
                             key={order.id}
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 15 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.95 }}
+                            exit={{ opacity: 0, scale: 0.98 }}
                             transition={{ delay: idx * 0.1 }}
                             onClick={() => router.push(`/customer/order/${order.id}`)}
                             className={cn(
-                                "group relative overflow-hidden glass-panel rounded-3xl p-6 text-left transition-all hover:bg-white/[0.04] border-white/5 hover:border-white/10 shadow-premium",
-                                order.status === 'ready' && "border-green-500/20 bg-green-500/[0.02]"
+                                "group relative overflow-hidden transition-all duration-700 rounded-[2rem] p-6 text-left border shadow-premium glass-panel",
+                                order.status === 'ready'
+                                    ? "bg-white/[0.06] border-white/20 scale-[1.02] shadow-[0_15px_40px_rgba(0,0,0,0.4)]"
+                                    : "bg-white/[0.015] border-white/5 opacity-90 hover:opacity-100 hover:bg-white/[0.03]"
                             )}
                         >
-                            <div className="flex flex-col gap-4 relative z-10">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className={cn(
-                                            "w-10 h-10 rounded-xl flex items-center justify-center",
-                                            order.status === 'ready' ? "bg-green-500/10" : "bg-white/5"
-                                        )}>
+                            <div className="flex flex-col gap-6 relative z-10">
+                                <div className="flex items-start justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-8 h-8 flex items-center justify-center">
                                             <ShoppingBag className={cn(
-                                                "w-5 h-5",
-                                                order.status === 'ready' ? "text-green-500" : "text-white/40"
+                                                "w-6 h-6 transition-all duration-700",
+                                                order.status === 'ready' ? "text-green-500 drop-shadow-[0_0_8px_rgba(34,197,94,0.3)]" : "text-white/10"
                                             )} />
                                         </div>
                                         <div>
-                                            <p className="text-[10px] font-black text-white/20 uppercase tracking-widest">Order ID</p>
-                                            <p className="text-xs font-black text-white uppercase tracking-tight">#{order.id.slice(-6).toUpperCase()}</p>
+                                            <p className="text-[7px] font-black text-white/10 uppercase tracking-[0.4em] mb-1">ORDER ID</p>
+                                            <p className="text-2xl font-black text-white uppercase tracking-tight">#{order.tokenNumber || order.id.slice(-4).toUpperCase()}</p>
                                         </div>
                                     </div>
-                                    <div className={cn(
-                                        "px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border",
-                                        order.status === 'ready'
-                                            ? "bg-green-500 text-black border-transparent shadow-[0_0_15px_rgba(34,197,94,0.3)] animate-pulse"
-                                            : "bg-white/5 text-white/40 border-white/5"
-                                    )}>
-                                        {getStatusLabel(order.status)}
+
+                                    <div className="flex flex-col items-center">
+                                        <div className={cn(
+                                            "text-[8px] font-black uppercase tracking-[0.3em] transition-all",
+                                            order.status === 'ready' ? "text-white" : "text-white/20"
+                                        )}>
+                                            {getStatusLabel(order.status)}
+                                        </div>
+                                        {order.status === 'ready' && (
+                                            <span className="text-[7px] font-black text-green-500/60 uppercase tracking-[0.3em] mt-1.5 text-center">
+                                                Verified Ready
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <div className="flex flex-wrap gap-2">
+                                <div className="space-y-5">
+                                    <div className="flex flex-wrap gap-1.5">
                                         {order.items.map((item, i) => (
-                                            <span key={i} className="text-[9px] font-bold text-white/40 bg-white/5 px-2 py-1 rounded-md uppercase">
+                                            <span key={i} className="text-[8px] font-black text-white/30 bg-white/[0.02] px-2.5 py-1 rounded-full uppercase tracking-wider border border-white/[0.01]">
                                                 {item.quantity}x {item.name}
                                             </span>
                                         ))}
                                     </div>
-                                    <div className="flex items-center justify-between pt-3 border-t border-white/5">
-                                        <div className="flex items-center gap-2">
-                                            {getStatusIcon(order.status)}
-                                            <span className="text-[10px] font-black text-white/40 uppercase tracking-widest">
+
+                                    <div className="flex items-center justify-between pt-5 border-t border-white/[0.04]">
+                                        <div className="flex items-center gap-3">
+                                            <div className={cn(
+                                                "w-1 h-1 rounded-full",
+                                                order.status === 'ready' ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" : "bg-white/5"
+                                            )} />
+                                            <span className="text-[8px] font-black text-white/10 uppercase tracking-[0.4em]">
                                                 {order.pickupSlot || 'ASAP'}
                                             </span>
                                         </div>
-                                        <ChevronRight className="w-4 h-4 text-white/20 group-hover:text-white/60 group-hover:translate-x-1 transition-all" />
+                                        <ChevronRight className="w-3 h-3 text-white/10 group-hover:text-white/30 transition-all" />
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Accent glow for ready orders */}
+                            {/* Refined side-glare for active state */}
                             {order.status === 'ready' && (
-                                <>
-                                    <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 blur-[40px] -z-10" />
-                                    <motion.div
-                                        animate={{ y: [0, -4, 0] }}
-                                        transition={{ repeat: Infinity, duration: 2 }}
-                                        className="absolute -top-1 -right-1"
-                                    >
-                                        <Sparkles className="w-6 h-6 text-green-500/40" />
-                                    </motion.div>
-                                </>
+                                <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                             )}
                         </motion.button>
                     ))}

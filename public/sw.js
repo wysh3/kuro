@@ -3,15 +3,20 @@ const ASSETS_TO_CACHE = [
     '/',
     '/customer',
     '/manifest.json',
-    '/logo.png'
+    '/logo_light_mode.png',
+    '/logo_dark_mode.png'
 ]
 
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(ASSETS_TO_CACHE)
-        })
-    )
+    const handleInstall = async () => {
+        try {
+            const cache = await caches.open(CACHE_NAME)
+            await cache.addAll(ASSETS_TO_CACHE)
+        } catch (e) {
+            console.error('[Cache SW] Install error:', e)
+        }
+    }
+    event.waitUntil(handleInstall())
     self.skipWaiting()
 })
 
@@ -20,59 +25,77 @@ self.addEventListener('activate', (event) => {
 })
 
 self.addEventListener('fetch', (event) => {
-    // Skip cross-origin or non-get requests
     if (event.request.method !== 'GET' || !event.request.url.startsWith(self.location.origin)) {
         return
     }
 
-    event.respondWith(
-        caches.match(event.request).then((response) => {
-            return response || fetch(event.request).then((fetchResponse) => {
-                return caches.open(CACHE_NAME).then((cache) => {
-                    // Don't cache everything, just main assets
-                    if (ASSETS_TO_CACHE.includes(new URL(event.request.url).pathname)) {
-                        cache.put(event.request, fetchResponse.clone())
-                    }
-                    return fetchResponse
-                })
-            })
-        })
-    )
-})
+    const handleFetch = async () => {
+        try {
+            const cachedResponse = await caches.match(event.request)
+            if (cachedResponse) return cachedResponse
 
-// Handle Push Notifications
-self.addEventListener('push', (event) => {
-    const data = event.data ? event.data.json() : {}
-    const title = data.title || 'KURO Update'
-    const options = {
-        body: data.body || 'New update from KURO',
-        icon: '/logo.png',
-        badge: '/logo.png',
-        tag: data.tag || 'kuro-notification',
-        data: data.url || '/customer',
-        vibrate: [200, 100, 200]
+            const fetchResponse = await fetch(event.request)
+            const cache = await caches.open(CACHE_NAME)
+
+            if (ASSETS_TO_CACHE.includes(new URL(event.request.url).pathname)) {
+                cache.put(event.request, fetchResponse.clone())
+            }
+
+            return fetchResponse
+        } catch (e) {
+            console.error('[Cache SW] Fetch error:', e)
+            return fetch(event.request)
+        }
     }
 
-    event.waitUntil(
-        self.registration.showNotification(title, options)
-    )
+    event.respondWith(handleFetch())
+})
+
+self.addEventListener('push', (event) => {
+    const handlePush = async () => {
+        try {
+            const data = event.data ? await event.data.json() : {}
+            const title = data.title || 'KURO Update'
+            const options = {
+                body: data.body || 'New update from KURO',
+                icon: '/logo_light_mode.png',
+                badge: '/logo_light_mode.png',
+                tag: data.tag || 'kuro-notification',
+                data: data.url || '/customer',
+                vibrate: [200, 100, 200]
+            }
+
+            await self.registration.showNotification(title, options)
+        } catch (e) {
+            console.error('[Cache SW] Push error:', e)
+        }
+    }
+
+    event.waitUntil(handlePush())
 })
 
 self.addEventListener('notificationclick', (event) => {
     event.notification.close()
-    const urlToOpen = event.notification.data || '/customer'
 
-    event.waitUntil(
-        clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-            for (let i = 0; i < windowClients.length; i++) {
-                const client = windowClients[i]
-                if (client.url === urlToOpen && 'focus' in client) {
+    const handleClick = async () => {
+        const urlToOpen = event.notification.data || '/customer'
+
+        try {
+            const windowClients = await clients.matchAll({ type: 'window', includeUncontrolled: true })
+
+            for (const client of windowClients) {
+                if (client.url.includes(urlToOpen) && 'focus' in client) {
                     return client.focus()
                 }
             }
+
             if (clients.openWindow) {
                 return clients.openWindow(urlToOpen)
             }
-        })
-    )
+        } catch (e) {
+            console.error('[Cache SW] Notification click error:', e)
+        }
+    }
+
+    event.waitUntil(handleClick())
 })

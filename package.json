@@ -7,7 +7,8 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "seed": "npx tsx scripts/seed-firestore.ts"
+    "seed": "npx tsx scripts/seed-firestore.ts",
+    "start:prod": "next build && next start"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

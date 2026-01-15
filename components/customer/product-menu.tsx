@@ -25,9 +25,11 @@ interface Product {
 
 interface ProductMenuProps {
   onAddToCart: (product: Product) => void
+  viewMode?: 'grid' | 'list'
+  isHeaderVisible?: boolean
 }
 
-export function ProductMenu({ onAddToCart }: ProductMenuProps) {
+export function ProductMenu({ onAddToCart, viewMode = 'grid', isHeaderVisible = true }: ProductMenuProps) {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -66,32 +68,6 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
     ? products.filter((p) => p.category === selectedCategory)
     : products
 
-  if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-        <div className="flex flex-wrap gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-9 w-24" />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i} className="bg-card border-border">
-              <Skeleton className="h-32 w-full" />
-              <CardContent className="p-4">
-                <Skeleton className="h-5 w-3/4 mb-2" />
-                <Skeleton className="h-4 w-1/2 mb-3" />
-                <div className="flex items-center justify-between">
-                  <Skeleton className="h-6 w-16" />
-                  <Skeleton className="h-8 w-8 rounded-full" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-    )
-  }
 
   if (error) {
     return (
@@ -105,38 +81,57 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Category Filter - Precision sticky position */}
-      <div className="sticky top-[88px] z-30 w-full transition-all duration-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="glass-panel border-white/5 rounded-2xl p-2 flex items-center gap-2 overflow-x-auto no-scrollbar shadow-premium">
-            <Button
-              onClick={() => setSelectedCategory(null)}
-              size="sm"
-              className={cn(
-                "rounded-xl px-6 h-10 whitespace-nowrap transition-all duration-500 text-[10px] font-black tracking-widest uppercase border-none",
-                selectedCategory === null
-                  ? "bg-white text-black shadow-premium scale-100"
-                  : "bg-transparent text-white/40 hover:text-white hover:bg-white/5"
-              )}
-            >
-              ALL MODULES
-            </Button>
-            {categories.map((category) => (
-              <Button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                size="sm"
-                className={cn(
-                  "rounded-xl px-6 h-10 whitespace-nowrap transition-all duration-500 text-[10px] font-black tracking-widest uppercase border-none",
-                  selectedCategory === category
-                    ? "bg-white text-black shadow-premium scale-100"
-                    : "bg-transparent text-white/40 hover:text-white hover:bg-white/5"
-                )}
+    <div className="space-y-2">
+      {/* Category Filter - Liquid Pill Design with Obsidian Aesthetics */}
+      <div className={cn(
+        "sticky z-40 w-full transition-all duration-500 ease-out-expo py-4",
+        isHeaderVisible ? "top-[88px]" : "top-4"
+      )}>
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
+          <div className="glass-panel border-white/5 rounded-2xl p-1.5 flex items-center gap-1 overflow-x-auto scrollbar-none shadow-premium relative w-fit">
+            {/* The Liquid Pill - Shared Layout ID for organic movement */}
+            <div className="flex items-center gap-1 relative w-full">
+              <div
+                className="relative cursor-pointer"
+                onClick={() => setSelectedCategory(null)}
               >
-                {category}
-              </Button>
-            ))}
+                {selectedCategory === null && (
+                  <motion.div
+                    layoutId="active-pill"
+                    className="absolute inset-0 bg-white rounded-xl shadow-premium"
+                    transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
+                  />
+                )}
+                <span className={cn(
+                  "relative z-10 px-4 h-10 flex items-center justify-center whitespace-nowrap text-[10px] font-black tracking-[0.2em] uppercase transition-colors duration-500",
+                  selectedCategory === null ? "text-black" : "text-white/40 hover:text-white"
+                )}>
+                  ALL ITEMS
+                </span>
+              </div>
+
+              {categories.map((category) => (
+                <div
+                  key={category}
+                  className="relative cursor-pointer"
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {selectedCategory === category && (
+                    <motion.div
+                      layoutId="active-pill"
+                      className="absolute inset-0 bg-white rounded-xl shadow-premium"
+                      transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
+                    />
+                  )}
+                  <span className={cn(
+                    "relative z-10 px-4 h-10 flex items-center justify-center whitespace-nowrap text-[10px] font-black tracking-[0.2em] uppercase transition-colors duration-500",
+                    selectedCategory === category ? "text-black" : "text-white/40 hover:text-white"
+                  )}>
+                    {category}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -149,22 +144,28 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
             animate={{ opacity: 1 }}
             className="text-center py-32 border border-dashed border-white/5 rounded-3xl"
           >
-            <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em]">No modules available in this cluster</p>
+            <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em]">No items available in this cluster</p>
           </motion.div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((product, index) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                    delay: index * 0.05
-                  }}
-                >
+          <div className={cn(
+            "grid gap-6",
+            viewMode === 'grid'
+              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+              : "grid-cols-1"
+          )}>
+            {filteredProducts.map((product, index) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 30,
+                  delay: index * 0.05
+                }}
+              >
+                {viewMode === 'grid' ? (
                   <Card
                     onClick={() => {
                       setSelectedProduct(product)
@@ -185,24 +186,24 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
                       ) : (
                         <div className="w-full h-full bg-white/5 animate-pulse" />
                       )}
- 
+
                       {/* Floating Badge */}
                       <div className="absolute top-4 left-4 flex gap-2">
                         {product.available ? (
-                          <div className="px-3 py-1 bg-black/40 backdrop-blur-md rounded-full border border-white/10">
-                            <span className="text-[8px] font-black text-white/80 tracking-widest uppercase">READY</span>
+                          <div className="px-3 h-6 flex items-center justify-center bg-black/40 backdrop-blur-md rounded-full border border-white/10">
+                            <span className="text-[7px] font-black text-white/80 tracking-widest uppercase leading-none">READY</span>
                           </div>
                         ) : (
-                          <div className="px-3 py-1 bg-tesla-red/20 backdrop-blur-md rounded-full border border-tesla-red/20">
-                            <span className="text-[8px] font-black text-tesla-red tracking-widest uppercase">DEPLETED</span>
+                          <div className="px-3 h-6 flex items-center justify-center bg-tesla-red/20 backdrop-blur-md rounded-full border border-tesla-red/20">
+                            <span className="text-[7px] font-black text-tesla-red tracking-widest uppercase leading-none">DEPLETED</span>
                           </div>
                         )}
                       </div>
- 
+
                       {/* Overlays */}
                       <div className="absolute inset-0 bg-linear-to-t from-black/80 via-transparent to-transparent opacity-60" />
                     </div>
- 
+
                     <CardContent className="p-6 flex-1 flex flex-col justify-between">
                       <div className="space-y-4">
                         <div className="flex justify-between items-start">
@@ -210,11 +211,11 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
                             {product.name}
                           </h3>
                         </div>
- 
+
                         <p className="text-white/40 text-xs font-medium line-clamp-2 leading-relaxed">
                           {product.description}
                         </p>
- 
+
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             <Clock className="w-3.5 h-3.5 text-white/20" />
@@ -227,13 +228,13 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
                           </div>
                         </div>
                       </div>
- 
+
                       <div className="mt-8 flex items-center justify-between">
                         <div className="flex flex-col">
-                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">Price Module</span>
+                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">Price</span>
                           <span className="text-3xl font-black text-white tracking-tighter">₹{product.price}</span>
                         </div>
- 
+
                         <Button
                           onClick={(e) => {
                             e.stopPropagation()
@@ -253,10 +254,92 @@ export function ProductMenu({ onAddToCart }: ProductMenuProps) {
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
-              ))}
-            </div>
-          )}
+                ) : (
+                  // Redesigned List View Layout - Level-Sync with Premium UI
+                  <Card
+                    onClick={() => {
+                      setSelectedProduct(product)
+                      setIsDetailOpen(true)
+                    }}
+                    className={cn(
+                      "group relative overflow-hidden glass-card rounded-[2rem] border-white/5 hover:border-white/20 transition-all duration-700 cursor-pointer p-3 sm:p-4 min-h-[110px] flex items-center",
+                      !product.available && "opacity-40 grayscale"
+                    )}
+                  >
+                    <div className="absolute inset-0 bg-linear-to-r from-apple-blue/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+                    <div className="flex items-center gap-4 sm:gap-8 w-full relative z-10">
+                      {/* Compact Image Panel */}
+                      <div className="relative w-20 h-20 sm:w-24 sm:h-24 overflow-hidden rounded-[1.2rem] shrink-0 border border-white/5">
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-white/5 animate-pulse" />
+                        )}
+                        {!product.available && (
+                          <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                            <span className="text-[7px] font-black text-white tracking-widest uppercase">DEPLETED</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Content Core */}
+                      <div className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="space-y-1">
+                          <h3 className="text-xl sm:text-2xl font-black text-white uppercase tracking-tighter group-hover:text-apple-blue transition-colors duration-500 leading-tight">
+                            {product.name}
+                          </h3>
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1.5 px-2 py-0.5 bg-white/5 rounded-md">
+                              <Clock className="w-3 h-3 text-white/30" />
+                              <span className="text-[8px] font-black text-white/30 tracking-widest uppercase">{product.prepTime} MIN</span>
+                            </div>
+                            <div className="hidden sm:block w-[1px] h-2 bg-white/10" />
+                            <span className="hidden sm:block text-[9px] font-black text-apple-blue tracking-tighter uppercase">Popular Cluster</span>
+                          </div>
+                        </div>
+
+                        <div className="hidden lg:block max-w-[30%]">
+                          <p className="text-white/30 text-[10px] font-medium line-clamp-2 leading-relaxed italic">
+                            "{product.description}"
+                          </p>
+                        </div>
+
+                        <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-10">
+                          <div className="flex flex-col items-start sm:items-end">
+                            <span className="text-[7px] font-black text-white/20 uppercase tracking-[0.2em] mb-0.5">Price</span>
+                            <span className="text-xl sm:text-2xl font-black text-white tracking-tighter leading-none">₹{product.price}</span>
+                          </div>
+
+                          <Button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              product.available && onAddToCart(product)
+                            }}
+                            size="icon"
+                            disabled={!product.available}
+                            className={cn(
+                              "w-10 h-10 sm:w-12 sm:h-12 rounded-xl transition-all duration-500 border-none",
+                              product.available
+                                ? "bg-white text-black hover:bg-apple-blue hover:text-white shadow-premium"
+                                : "bg-white/5 text-white/20"
+                            )}
+                          >
+                            <Plus className="w-5 h-5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
 
       <ProductDetailDialog

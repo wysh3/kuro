@@ -85,44 +85,45 @@ export default function MealPlannerPage() {
     const handleSendMessage = async (text: string) => {
         if (!text.trim() || loading) return;
 
-        // Optimistically add user message
         const userMessage: ChatMessage = { role: 'user', content: text };
         setMessages(prev => [...prev, userMessage]);
         setInput('');
         setLoading(true);
 
+        const controller = new AbortController();
+        const { signal } = controller;
+
         try {
-            // Call Chat API
             const response = await fetch('/api/ai/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     message: text,
                     conversationHistory: messages
-                })
+                }),
+                signal
             });
+
+            if (signal.aborted) return;
 
             const data = await response.json();
 
-            if (data.success && data.response) {
+            if (!signal.aborted && data.success && data.response) {
                 const aiResponse: ChatResponse = data.response;
 
-                // Add AI message
                 setMessages(prev => [...prev, {
                     role: 'assistant',
                     content: aiResponse.message
                 }]);
 
-                // Handle meal plans
-                if (aiResponse.mealPlan) {
+                if (!signal.aborted && aiResponse.mealPlan) {
                     setMessages(prev => [...prev, {
                         role: 'assistant',
                         content: JSON.stringify({ type: 'meal_plan', plan: aiResponse.mealPlan })
                     }]);
                 }
 
-                // Handle order confirmation
-                if (aiResponse.orderConfirmation) {
+                if (!signal.aborted && aiResponse.orderConfirmation) {
                     setPendingOrder(aiResponse.orderConfirmation);
                     setMessages(prev => [...prev, {
                         role: 'assistant',
@@ -130,8 +131,7 @@ export default function MealPlannerPage() {
                     }]);
                 }
 
-                // Handle suggested items
-                if (aiResponse.suggestedItems && aiResponse.suggestedItems.length > 0) {
+                if (!signal.aborted && aiResponse.suggestedItems && aiResponse.suggestedItems.length > 0) {
                     setMessages(prev => [...prev, {
                         role: 'assistant',
                         content: JSON.stringify({ type: 'suggestions', items: aiResponse.suggestedItems })
@@ -142,13 +142,17 @@ export default function MealPlannerPage() {
                 throw new Error(data.error || 'Failed to get response');
             }
         } catch (error) {
-            console.error('Error:', error);
-            setMessages(prev => [...prev, {
-                role: 'assistant',
-                content: 'I had a bit of trouble connecting to the kitchen. Could you try asking that again?'
-            }]);
+            if (!signal.aborted) {
+                console.error('Error:', error);
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: 'I had a bit of trouble connecting to the kitchen. Could you try asking that again?'
+                }]);
+            }
         } finally {
-            setLoading(false);
+            if (!signal.aborted) {
+                setLoading(false);
+            }
         }
     };
 
@@ -304,11 +308,12 @@ export default function MealPlannerPage() {
                             <div className="flex items-center gap-4">
                                 <div className="w-10 h-10 rounded-xl bg-white shadow-premium flex items-center justify-center overflow-hidden">
                                     <Image
-                                        src="/logo.png"
+                                        src="/logo_light_mode.png"
                                         alt="KURO Logo"
                                         width={36}
                                         height={36}
                                         className="object-cover"
+                                        loading="eager"
                                     />
                                 </div>
                                 <div>
@@ -354,11 +359,12 @@ export default function MealPlannerPage() {
                                 {msg.role === 'assistant' && (
                                     <div className="w-11 h-11 rounded-[1.2rem] bg-white shadow-premium flex-shrink-0 flex items-center justify-center mt-1 border border-white/10 transition-transform duration-500 overflow-hidden">
                                         <Image
-                                            src="/logo.png"
+                                            src="/logo_light_mode.png"
                                             alt="KURO AI"
                                             width={32}
                                             height={32}
                                             className="object-cover"
+                                            loading="eager"
                                         />
                                     </div>
                                 )}
@@ -440,7 +446,13 @@ export default function MealPlannerPage() {
                                 disabled={loading || !input.trim()}
                                 className="w-20 h-20 rounded-[2rem] bg-white text-black hover:bg-white/90 shadow-premium transition-all active:scale-90 flex items-center justify-center p-0 border-none group"
                             >
-                                {loading ? <Spinner className="w-8 h-8" /> : <Send className="w-8 h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
+                                {loading ? (
+                                    <div className="w-8 h-8 flex items-center justify-center">
+                                        <div className="w-5 h-5 border-2 border-black/10 border-t-black rounded-full animate-spin" />
+                                    </div>
+                                ) : (
+                                    <Send className="w-8 h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                )}
                             </Button>
                         </div>
                     </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
@@ -24,6 +24,16 @@ export default function CustomerPage() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [currentTime, setCurrentTime] = useState(new Date())
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [showHeader, setShowHeader] = useState(true)
+
+  // Responsive default view mode
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 640
+      setViewMode(isMobile ? 'list' : 'grid')
+    }
+  }, [])
 
   useEffect(() => {
     setMounted(true)
@@ -31,14 +41,39 @@ export default function CustomerPage() {
     window.scrollTo(0, 0)
   }, [])
 
+  const scrollRef = useRef(0)
+
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
+      const currentScrollY = window.scrollY
+      const delta = currentScrollY - scrollRef.current
+
+      setIsScrolled(currentScrollY > 20)
+
+      // Show header immediately if near top
+      if (currentScrollY < 50) {
+        setShowHeader(true)
+        scrollRef.current = currentScrollY
+        return
+      }
+
+      // Ignore massive jumps for middle-of-page layout shifts
+      if (Math.abs(delta) > 150) {
+        scrollRef.current = currentScrollY
+        return
+      }
+
+      // Logic for purposeful scroll direction
+      if (delta > 10 && currentScrollY > 100) {
+        setShowHeader(false)
+      } else if (delta < -10) {
+        setShowHeader(true)
+      }
+
+      scrollRef.current = currentScrollY
     }
-    window.addEventListener('scroll', handleScroll)
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   // Timer effect for currentTime
@@ -64,11 +99,11 @@ export default function CustomerPage() {
       <div className="fixed inset-0 bg-background z-[100] flex items-center justify-center">
         <motion.div
           initial={{ rotate: 0, scale: 1 }}
-          animate={{ 
+          animate={{
             rotate: 360,
             scale: [1, 1.1, 1]
           }}
-          transition={{ 
+          transition={{
             rotate: { duration: 1, repeat: Infinity, ease: "linear" },
             scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
           }}
@@ -97,12 +132,13 @@ export default function CustomerPage() {
 
       {/* Sleek Floating Header */}
       <header className={cn(
-        "fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-700 w-[calc(100%-2rem)] max-w-5xl",
-        isScrolled ? "top-4" : "top-6"
+        "fixed top-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 w-[calc(100%-2rem)] max-w-5xl",
+        isScrolled ? "top-4 scale-[0.98]" : "top-6 scale-100",
+        !showHeader && "-translate-y-32 opacity-0"
       )}>
         <div className={cn(
           "glass-panel rounded-2xl px-6 py-3 flex items-center justify-between transition-all duration-700",
-          isScrolled ? "bg-black/40 backdrop-blur-3xl shadow-premium" : "bg-transparent border-transparent"
+          isScrolled ? "bg-black/40 backdrop-blur-2xl shadow-premium" : "bg-transparent border-transparent"
         )}>
           <div className="flex items-center gap-6">
             <motion.div
@@ -111,13 +147,14 @@ export default function CustomerPage() {
               className="flex items-center gap-2 cursor-pointer"
               onClick={() => router.push('/customer')}
             >
-              <div className="w-9 h-9 rounded-xl bg-white shadow-premium flex items-center justify-center overflow-hidden">
+              <div className="w-9 h-9 rounded-full bg-white shadow-premium flex items-center justify-center overflow-hidden">
                 <Image
-                  src="/logo.png"
+                  src="/logo_light_mode.png"
                   alt="KURO Logo"
                   width={36}
                   height={36}
                   className="object-cover scale-100"
+                  loading="eager"
                 />
               </div>
               <span className="text-label-sm font-black text-white/90 hidden sm:block tracking-widest">KURO.</span>
@@ -177,177 +214,119 @@ export default function CustomerPage() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-32 pb-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          {/* Dashboard Header - Simplified Structure */}
-          <div className="space-y-12">
+      <main className="pt-24 sm:pt-32 pb-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+          {/* Dashboard Header - Compact Landing Fold */}
+          <div className="flex flex-col justify-center space-y-4">
             {/* Unified Hero Area */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-4 items-start">
               {/* Immersive Greeting */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="lg:col-span-7 relative"
+                className="lg:col-span-7 relative pt-2"
               >
                 <div className="sm:pl-4">
-                  <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center gap-3 mb-3">
                     <div className="w-2 h-2 rounded-full bg-apple-blue animate-pulse" />
-                    <span className="text-label-xs font-black text-white/30 uppercase tracking-[0.5em]">Campus Dining Active</span>
+                    <span className="text-label-xs font-black text-white/30 uppercase tracking-[0.5em]">Operations Active</span>
                   </div>
 
-                  <h2 className="text-6xl sm:text-8xl font-black tracking-tighter text-white uppercase leading-[0.85] mb-8 overflow-hidden">
-                    <div className="flex flex-wrap items-baseline gap-2">
-                      <InteractiveGreeting firstName={firstName} />
-                      <span className="text-gradient">{firstName}</span>
+                  <h2 className="text-4xl sm:text-7xl font-black tracking-tighter text-white uppercase leading-none mb-4 overflow-hidden">
+                    <div className="flex flex-col items-start gap-1">
+                      <div className="h-[1.1em] flex items-end">
+                        <InteractiveGreeting firstName={firstName} />
+                      </div>
+                      <span className="text-gradient leading-none block">{firstName}</span>
                     </div>
                   </h2>
-                  <div className="flex flex-wrap items-center gap-4">
-                    <div className="flex items-center gap-3 px-5 py-3 bg-white/[0.03] border border-white/10 rounded-2xl shadow-premium backdrop-blur-md">
-                      <Clock className="w-4 h-4 text-apple-blue" />
-                      <span className="text-xs font-black text-white/60 tracking-widest">
-                        {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+
+                  <div className="flex flex-col gap-4 sm:gap-6 mb-2 sm:mb-8">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 bg-white/[0.03] border border-white/10 rounded-xl shadow-premium backdrop-blur-md">
+                        <Clock className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-apple-blue" />
+                        <span className="text-[9px] sm:text-[10px] font-black text-white/60 tracking-widest">
+                          {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 bg-white/[0.03] border border-white/10 rounded-xl shadow-premium backdrop-blur-md">
+                        <TrendingUp className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-green-500" />
+                        <span className="text-[9px] sm:text-[10px] font-black text-white/60 tracking-widest uppercase">Realtime</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3 px-5 py-3 bg-white/[0.03] border border-white/10 rounded-2xl shadow-premium backdrop-blur-md">
-                      <TrendingUp className="w-4 h-4 text-green-500" />
-                      <span className="text-xs font-black text-white/60 tracking-widest uppercase">Connectivity: High</span>
-                    </div>
+
+                    <motion.button
+                      whileHover={{ scale: 1.02, y: -2 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={() => router.push('/customer/meal-planner')}
+                      className="group relative hidden sm:flex items-center justify-center px-4 py-2 sm:px-8 sm:py-3.5 bg-white text-black rounded-full shadow-premium transition-all w-fit"
+                    >
+                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] relative z-10">AI PLANNER</span>
+                    </motion.button>
                   </div>
                 </div>
               </motion.div>
 
               {/* Status Integration */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
+                initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.25 }}
                 className="lg:col-span-5"
               >
-                <CrowdStatusCard />
-              </motion.div>
-            </div>
-
-            {/* Dashboard Briefing Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-                className="glass-card rounded-[2rem] p-8 border-white/5 shadow-premium group hover:bg-white/[0.03] transition-all"
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-apple-blue/10 flex items-center justify-center">
-                    <TrendingUp className="w-5 h-5 text-apple-blue" />
-                  </div>
-                  <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Kitchen Efficiency</h4>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-3xl font-black text-white italic tracking-tighter">98% Faster</p>
-                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest leading-relaxed">The kitchen is operating at peak speed today. Minimal wait times expected.</p>
+                <div className="origin-top pt-0 lg:pt-2">
+                  <CrowdStatusCard />
                 </div>
               </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-                className="glass-card rounded-[2rem] p-8 border-white/5 shadow-premium group hover:bg-white/[0.03] transition-all"
-              >
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-green-500" />
-                  </div>
-                  <h4 className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Today's Special</h4>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-3xl font-black text-white italic tracking-tighter text-gradient">POKE BOWL</p>
-                  <p className="text-[10px] font-bold text-white/20 uppercase tracking-widest leading-relaxed">Our most loved dish today. Fresh, healthy, and ready in minutes.</p>
-                </div>
-              </motion.div>
-
-
             </div>
-
-            {/* Intelligence Layer */}
-            <div className="grid grid-cols-1 gap-6">
-              <RushWarningBanner />
-            </div>
-
-            {/* AI Meal Planner Card - Re-engineered */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.6 }}
-            >
-              <button
-                onClick={() => router.push('/customer/meal-planner')}
-                className="w-full text-left group relative overflow-hidden glass-card rounded-[3rem] p-8 sm:p-14 transition-all duration-700 hover:ring-1 hover:ring-white/20 shadow-premium"
-              >
-                <div className="absolute inset-0 bg-radial-at-tr from-apple-blue/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <div className="absolute bottom-0 right-0 w-64 h-64 bg-apple-blue/10 blur-[100px] -z-10 translate-x-1/2 translate-y-1/2 group-hover:translate-x-1/4 group-hover:translate-y-1/4 transition-transform duration-1000" />
-
-                <div className="flex flex-col sm:flex-row items-start justify-between gap-12 relative z-10">
-                  <div className="flex-1 space-y-8">
-                    <div className="flex items-center gap-6">
-                      <div className="w-16 h-16 rounded-[1.5rem] bg-white shadow-premium flex items-center justify-center text-black transition-transform duration-700">
-                        <Sparkles className="w-8 h-8" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-4">
-                          <h3 className="text-4xl font-black text-white uppercase tracking-tighter">AI NAVIGATOR</h3>
-                          <span className="px-3 py-1 text-[9px] font-black bg-apple-blue text-white rounded-md uppercase tracking-[0.2em]">S-CLASS AI</span>
-                        </div>
-                        <p className="text-white/30 font-bold text-xs tracking-[0.4em] uppercase mt-1">Core Neural Engine: GEMINI 3.0</p>
-                      </div>
-                    </div>
-
-                    <p className="text-2xl text-white/60 font-medium leading-relaxed max-w-2xl italic tracking-tight">
-                      "Precision fueling engineered for the modern lifestyle. Calibrate your nutritional goals with predictive AI intelligence."
-                    </p>
-
-                    <div className="flex flex-wrap gap-3">
-                      {['5-DAY STREAK', 'HP MODE ACTIVE', 'ENERGY CRITICAL', 'METABOLIC SYNC'].map(tag => (
-                        <div key={tag} className="px-5 py-2 text-[10px] font-black bg-white/5 border border-white/5 rounded-xl text-white/30 group-hover:text-white/90 group-hover:border-white/20 group-hover:bg-white/10 transition-all tracking-widest">
-                          {tag}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="hidden md:block">
-                    <div className="w-48 h-48 rounded-full border border-white/5 flex items-center justify-center relative">
-                      <motion.div
-                        animate={{ opacity: [0.4, 0.8, 0.4] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute inset-2 border-t-2 border-apple-blue/40 rounded-full"
-                      />
-                      <Sparkles className="w-16 h-16 text-white/10 group-hover:text-white/40 transition-colors duration-500" />
-                    </div>
-                  </div>
-                </div>
-              </button>
-            </motion.div>
           </div>
 
-          {/* Active Orders Section */}
           <ActiveOrders />
 
-          <div className="space-y-8">
+          <div className="flex flex-col gap-12">
+            <RushWarningBanner />
+          </div>
+
+          <div className="space-y-2">
             <div className="flex items-center justify-between px-2">
-              <h2 className="text-label-sm font-black text-white/20 tracking-[0.5em] uppercase">Selection Protocol</h2>
+              <h2 className="text-label-sm font-black text-white/20 tracking-[0.5em] uppercase">Menu</h2>
               <div className="h-[1px] flex-1 bg-white/5 mx-8" />
-              <Button variant="ghost" size="sm" className="text-label-xs text-white/40 hover:text-white uppercase tracking-widest">View Grid</Button>
+              <div className="flex items-center gap-6 relative">
+                <div
+                  className="relative cursor-pointer"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <span className={cn(
+                    "relative z-10 flex items-center justify-center text-[9px] font-black uppercase tracking-[0.3em] transition-all duration-300",
+                    viewMode === 'grid' ? "text-white" : "text-white/20 hover:text-white/40"
+                  )}>
+                    GRID
+                  </span>
+                </div>
+                <div
+                  className="relative cursor-pointer"
+                  onClick={() => setViewMode('list')}
+                >
+                  <span className={cn(
+                    "relative z-10 flex items-center justify-center text-[9px] font-black uppercase tracking-[0.3em] transition-all duration-300",
+                    viewMode === 'list' ? "text-white" : "text-white/20 hover:text-white/40"
+                  )}>
+                    LIST
+                  </span>
+                </div>
+              </div>
             </div>
-            <ProductMenu onAddToCart={addToCart} />
+            <ProductMenu onAddToCart={addToCart} viewMode={viewMode} isHeaderVisible={showHeader} />
           </div>
         </div>
       </main>
+
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: isScrolled ? 0 : 1, y: isScrolled ? 20 : 0 }}
         transition={{ duration: 0.5 }}
-        className="fixed bottom-[15px] left-1/2 -translate-x-1/2 z-30 hidden md:flex flex-col items-center gap-3 pointer-events-none"
+        className="fixed bottom-[23px] left-1/2 -translate-x-1/2 z-30 hidden md:flex flex-col items-center gap-3 pointer-events-none"
       >
         <div className="w-5 h-8 rounded-full border border-white/10 backdrop-blur-sm flex justify-center pt-2 shadow-[0_0_15px_rgba(255,255,255,0.02)]">
           <motion.div
