@@ -94,6 +94,8 @@ Visit [http://localhost:3000](http://localhost:3000)
 | Kitchen Throughput | 12/hr | 23/hr | **92% ↑** |
 | Food Waste | 18% | 6% | **67% ↓** |
 
+*These projections are based on simulation models and incentive response rates from similar behavioral economics studies. Actual results may vary based on adoption rates, operational constraints, and user behavior patterns.*
+
 ---
 
 ## 👥 Team
@@ -102,8 +104,6 @@ Built for GDG on Campus - **Tenet: Invert the Problem Hackathon, January 2026**
 
 - **Lain** - Development Team
 - **wysh** - Team Leader & Lead Developer
-
-**Mentored by:** Google Developer Group on Campus, Amity University
 
 ---
 
