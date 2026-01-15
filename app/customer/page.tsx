@@ -45,14 +45,25 @@ export default function CustomerPage() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY
+      const delta = currentScrollY - lastScrollY
+
       setIsScrolled(currentScrollY > 20)
 
-      // Hide header on scroll down, show on scroll up
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+      // Ignore massive jumps (likely layout shifts from filtering)
+      if (Math.abs(delta) > 150) {
+        setLastScrollY(currentScrollY)
+        return
+      }
+
+      // Hide header on scroll down (threshold of 5px)
+      if (delta > 5 && currentScrollY > 100) {
         setShowHeader(false)
-      } else {
+      }
+      // Show header on scroll up (threshold of 15px) or when reaching the top
+      else if (delta < -15 || currentScrollY < 50) {
         setShowHeader(true)
       }
+
       setLastScrollY(currentScrollY)
     }
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -123,7 +134,7 @@ export default function CustomerPage() {
       )}>
         <div className={cn(
           "glass-panel rounded-2xl px-6 py-3 flex items-center justify-between transition-all duration-700",
-          isScrolled ? "bg-black/40 backdrop-blur-3xl shadow-premium" : "bg-transparent border-transparent"
+          isScrolled ? "bg-black/40 backdrop-blur-2xl shadow-premium" : "bg-transparent border-transparent"
         )}>
           <div className="flex items-center gap-6">
             <motion.div
@@ -328,45 +339,46 @@ export default function CustomerPage() {
             <div className="flex items-center justify-between px-2">
               <h2 className="text-label-sm font-black text-white/20 tracking-[0.5em] uppercase">Selection Protocol</h2>
               <div className="h-[1px] flex-1 bg-white/5 mx-8" />
-              <div className="flex bg-white/5 p-1 rounded-xl border border-white/10">
-                <Button
-                  variant="ghost"
-                  size="sm"
+              <div className="flex bg-white/5 p-1 rounded-xl border border-white/10 relative">
+                <div
+                  className="relative cursor-pointer"
                   onClick={() => setViewMode('grid')}
-                  className={cn(
-                    "h-8 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all duration-300",
-                    viewMode === 'grid' ? "bg-white text-black shadow-premium" : "text-white/40 hover:text-white"
-                  )}
                 >
-                  GRID
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                  {viewMode === 'grid' && (
+                    <motion.div
+                      layoutId="view-pill"
+                      className="absolute inset-0 bg-white rounded-lg shadow-premium"
+                      transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
+                    />
+                  )}
+                  <span className={cn(
+                    "relative z-10 h-8 px-4 flex items-center justify-center text-[9px] font-black uppercase tracking-widest transition-colors duration-300",
+                    viewMode === 'grid' ? "text-black" : "text-white/40 hover:text-white"
+                  )}>
+                    GRID
+                  </span>
+                </div>
+                <div
+                  className="relative cursor-pointer"
                   onClick={() => setViewMode('list')}
-                  className={cn(
-                    "h-8 px-4 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all duration-300",
-                    viewMode === 'list' ? "bg-white text-black shadow-premium" : "text-white/40 hover:text-white"
-                  )}
                 >
-                  LIST
-                </Button>
+                  {viewMode === 'list' && (
+                    <motion.div
+                      layoutId="view-pill"
+                      className="absolute inset-0 bg-white rounded-lg shadow-premium"
+                      transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
+                    />
+                  )}
+                  <span className={cn(
+                    "relative z-10 h-8 px-4 flex items-center justify-center text-[9px] font-black uppercase tracking-widest transition-colors duration-300",
+                    viewMode === 'list' ? "text-black" : "text-white/40 hover:text-white"
+                  )}>
+                    LIST
+                  </span>
+                </div>
               </div>
             </div>
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={viewMode}
-                initial={{ opacity: 0, scale: 0.96, y: 15, filter: "blur(8px)" }}
-                animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-                exit={{ opacity: 0, scale: 1.02, y: -10, filter: "blur(8px)" }}
-                transition={{
-                  duration: 0.4,
-                  ease: [0.23, 1, 0.32, 1], // "Snappier-Fluid" Physics
-                }}
-              >
-                <ProductMenu onAddToCart={addToCart} viewMode={viewMode} isHeaderVisible={showHeader} />
-              </motion.div>
-            </AnimatePresence>
+            <ProductMenu onAddToCart={addToCart} viewMode={viewMode} isHeaderVisible={showHeader} />
           </div>
         </div>
       </main>

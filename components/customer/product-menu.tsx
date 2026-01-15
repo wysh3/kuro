@@ -82,40 +82,56 @@ export function ProductMenu({ onAddToCart, viewMode = 'grid', isHeaderVisible = 
 
   return (
     <div className="space-y-6">
-      {/* Category Filter - Precision sticky position with dynamic HUD sync */}
+      {/* Category Filter - Liquid Pill Design with Obsidian Aesthetics */}
       <div className={cn(
-        "sticky z-40 w-full transition-all duration-500 py-2",
+        "sticky z-40 w-full transition-all duration-500 ease-out-expo py-4",
         isHeaderVisible ? "top-[88px]" : "top-4"
       )}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="glass-panel bg-black/40 backdrop-blur-3xl border-white/5 rounded-2xl p-2 flex items-center gap-2 overflow-x-auto scrollbar-none shadow-premium">
-            <Button
-              onClick={() => setSelectedCategory(null)}
-              size="sm"
-              className={cn(
-                "rounded-xl px-6 h-10 whitespace-nowrap transition-all duration-500 text-[10px] font-black tracking-widest uppercase border-none",
-                selectedCategory === null
-                  ? "bg-white text-black shadow-premium scale-100"
-                  : "bg-transparent text-white/40 hover:text-white hover:bg-white/5"
-              )}
-            >
-              ALL MODULES
-            </Button>
-            {categories.map((category) => (
-              <Button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                size="sm"
-                className={cn(
-                  "rounded-xl px-6 h-10 whitespace-nowrap transition-all duration-500 text-[10px] font-black tracking-widest uppercase border-none",
-                  selectedCategory === category
-                    ? "bg-white text-black shadow-premium scale-100"
-                    : "bg-transparent text-white/40 hover:text-white hover:bg-white/5"
-                )}
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
+          <div className="glass-panel border-white/5 rounded-2xl p-1.5 flex items-center gap-1 overflow-x-auto scrollbar-none shadow-premium relative w-fit">
+            {/* The Liquid Pill - Shared Layout ID for organic movement */}
+            <div className="flex items-center gap-1 relative w-full">
+              <div
+                className="relative cursor-pointer"
+                onClick={() => setSelectedCategory(null)}
               >
-                {category}
-              </Button>
-            ))}
+                {selectedCategory === null && (
+                  <motion.div
+                    layoutId="active-pill"
+                    className="absolute inset-0 bg-white rounded-xl shadow-premium"
+                    transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
+                  />
+                )}
+                <span className={cn(
+                  "relative z-10 px-4 h-10 flex items-center justify-center whitespace-nowrap text-[10px] font-black tracking-[0.2em] uppercase transition-colors duration-500",
+                  selectedCategory === null ? "text-black" : "text-white/40 hover:text-white"
+                )}>
+                  ALL MODULES
+                </span>
+              </div>
+
+              {categories.map((category) => (
+                <div
+                  key={category}
+                  className="relative cursor-pointer"
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {selectedCategory === category && (
+                    <motion.div
+                      layoutId="active-pill"
+                      className="absolute inset-0 bg-white rounded-xl shadow-premium"
+                      transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
+                    />
+                  )}
+                  <span className={cn(
+                    "relative z-10 px-4 h-10 flex items-center justify-center whitespace-nowrap text-[10px] font-black tracking-[0.2em] uppercase transition-colors duration-500",
+                    selectedCategory === category ? "text-black" : "text-white/40 hover:text-white"
+                  )}>
+                    {category}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
