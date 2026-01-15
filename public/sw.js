@@ -3,7 +3,8 @@ const ASSETS_TO_CACHE = [
     '/',
     '/customer',
     '/manifest.json',
-    '/logo.png'
+    '/logo_light_mode.png',
+    '/logo_dark_mode.png'
 ]
 
 self.addEventListener('install', (event) => {
@@ -57,8 +58,8 @@ self.addEventListener('push', (event) => {
             const title = data.title || 'KURO Update'
             const options = {
                 body: data.body || 'New update from KURO',
-                icon: '/logo.png',
-                badge: '/logo.png',
+                icon: '/logo_light_mode.png',
+                badge: '/logo_light_mode.png',
                 tag: data.tag || 'kuro-notification',
                 data: data.url || '/customer',
                 vibrate: [200, 100, 200]

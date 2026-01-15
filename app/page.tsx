@@ -101,7 +101,7 @@ export default function LoginPage() {
             className="relative inline-flex items-center justify-center w-24 h-24 rounded-3xl bg-white shadow-premium mx-auto overflow-hidden"
           >
             <Image
-              src="/logo.png"
+              src="/logo_light_mode.png"
               alt="KURO Logo"
               fill
               className="object-cover scale-150"

@@ -30,7 +30,7 @@ export default function CustomerLayout({
     const showNav = !isOrderPage && !isMealPlanner && mounted
     return (
         <div className="relative min-h-screen">
-            <main className="pb-20 md:pb-0">
+            <main className="pb-40 md:pb-0">
                 {children}
             </main>
 

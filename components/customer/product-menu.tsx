@@ -81,7 +81,7 @@ export function ProductMenu({ onAddToCart, viewMode = 'grid', isHeaderVisible = 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       {/* Category Filter - Liquid Pill Design with Obsidian Aesthetics */}
       <div className={cn(
         "sticky z-40 w-full transition-all duration-500 ease-out-expo py-4",

@@ -23,8 +23,8 @@ self.addEventListener('push', (event) => {
             let data = {
                 title: 'KURO Update',
                 body: 'New notification from KURO',
-                icon: '/logo.png',
-                badge: '/logo.png',
+                icon: '/logo_light_mode.png',
+                badge: '/logo_light_mode.png',
                 tag: 'kuro-notification',
                 data: { url: '/customer' }
             };

@@ -147,9 +147,9 @@ export default function CustomerPage() {
               className="flex items-center gap-2 cursor-pointer"
               onClick={() => router.push('/customer')}
             >
-              <div className="w-9 h-9 rounded-xl bg-white shadow-premium flex items-center justify-center overflow-hidden">
+              <div className="w-9 h-9 rounded-full bg-white shadow-premium flex items-center justify-center overflow-hidden">
                 <Image
-                  src="/logo.png"
+                  src="/logo_light_mode.png"
                   alt="KURO Logo"
                   width={36}
                   height={36}
@@ -214,12 +214,12 @@ export default function CustomerPage() {
       </header>
 
       {/* Main Content */}
-      <main className="pt-32 pb-24">
+      <main className="pt-24 sm:pt-32 pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
           {/* Dashboard Header - Compact Landing Fold */}
           <div className="flex flex-col justify-center space-y-4">
             {/* Unified Hero Area */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-4 items-start">
               {/* Immersive Greeting */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -242,17 +242,17 @@ export default function CustomerPage() {
                     </div>
                   </h2>
 
-                  <div className="flex flex-col gap-6 mb-8">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-xl shadow-premium backdrop-blur-md">
-                        <Clock className="w-3.5 h-3.5 text-apple-blue" />
-                        <span className="text-[10px] font-black text-white/60 tracking-widest">
+                  <div className="flex flex-col gap-4 sm:gap-6 mb-2 sm:mb-8">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 bg-white/[0.03] border border-white/10 rounded-xl shadow-premium backdrop-blur-md">
+                        <Clock className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-apple-blue" />
+                        <span className="text-[9px] sm:text-[10px] font-black text-white/60 tracking-widest">
                           {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-xl shadow-premium backdrop-blur-md">
-                        <TrendingUp className="w-3.5 h-3.5 text-green-500" />
-                        <span className="text-[10px] font-black text-white/60 tracking-widest uppercase">Realtime</span>
+                      <div className="flex items-center gap-2 px-2 py-1 sm:px-3 sm:py-1.5 bg-white/[0.03] border border-white/10 rounded-xl shadow-premium backdrop-blur-md">
+                        <TrendingUp className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-green-500" />
+                        <span className="text-[9px] sm:text-[10px] font-black text-white/60 tracking-widest uppercase">Realtime</span>
                       </div>
                     </div>
 
@@ -260,9 +260,9 @@ export default function CustomerPage() {
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => router.push('/customer/meal-planner')}
-                      className="group relative flex items-center justify-center px-8 py-3.5 bg-white text-black rounded-full shadow-premium transition-all w-fit"
+                      className="group relative hidden sm:flex items-center justify-center px-4 py-2 sm:px-8 sm:py-3.5 bg-white text-black rounded-full shadow-premium transition-all w-fit"
                     >
-                      <span className="text-[10px] font-black uppercase tracking-[0.3em] relative z-10">AI PLANNER</span>
+                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] relative z-10">AI PLANNER</span>
                     </motion.button>
                   </div>
                 </div>
@@ -275,7 +275,7 @@ export default function CustomerPage() {
                 transition={{ duration: 0.5, delay: 0.25 }}
                 className="lg:col-span-5"
               >
-                <div className="origin-top pt-2">
+                <div className="origin-top pt-0 lg:pt-2">
                   <CrowdStatusCard />
                 </div>
               </motion.div>
@@ -288,7 +288,7 @@ export default function CustomerPage() {
             <RushWarningBanner />
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-2">
             <div className="flex items-center justify-between px-2">
               <h2 className="text-label-sm font-black text-white/20 tracking-[0.5em] uppercase">Menu</h2>
               <div className="h-[1px] flex-1 bg-white/5 mx-8" />

@@ -31,9 +31,9 @@ export function BottomNav() {
             initial={{ y: 100, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="fixed bottom-8 left-0 right-0 z-50 px-8 md:hidden pointer-events-none"
+            className="fixed bottom-6 left-0 right-0 z-50 px-4 sm:px-8 md:hidden pointer-events-none"
         >
-            <div className="max-w-md mx-auto w-full h-20 glass-panel border-white/10 rounded-[2.5rem] shadow-premium flex items-center justify-around px-4 pointer-events-auto relative overflow-hidden">
+            <div className="max-w-md mx-auto w-full h-16 sm:h-20 glass-panel border-white/10 rounded-[2rem] sm:rounded-[2.5rem] shadow-premium flex items-center justify-around px-2 sm:px-4 pointer-events-auto relative overflow-hidden">
                 {/* Tactical background detail */}
                 <div className="absolute inset-0 bg-radial-at-t from-white/[0.05] via-transparent to-transparent opacity-50" />
 
@@ -60,7 +60,7 @@ export function BottomNav() {
                                 )}
                             >
                                 <item.icon className={cn(
-                                    "w-7 h-7 transition-all duration-500",
+                                    "w-6 h-6 sm:w-7 h-7 transition-all duration-500",
                                     isActive && "drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]"
                                 )} />
                                 {item.id === 'cart' && cart.length > 0 && (

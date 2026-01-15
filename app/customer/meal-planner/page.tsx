@@ -308,7 +308,7 @@ export default function MealPlannerPage() {
                             <div className="flex items-center gap-4">
                                 <div className="w-10 h-10 rounded-xl bg-white shadow-premium flex items-center justify-center overflow-hidden">
                                     <Image
-                                        src="/logo.png"
+                                        src="/logo_light_mode.png"
                                         alt="KURO Logo"
                                         width={36}
                                         height={36}
@@ -359,7 +359,7 @@ export default function MealPlannerPage() {
                                 {msg.role === 'assistant' && (
                                     <div className="w-11 h-11 rounded-[1.2rem] bg-white shadow-premium flex-shrink-0 flex items-center justify-center mt-1 border border-white/10 transition-transform duration-500 overflow-hidden">
                                         <Image
-                                            src="/logo.png"
+                                            src="/logo_light_mode.png"
                                             alt="KURO AI"
                                             width={32}
                                             height={32}
