@@ -106,7 +106,7 @@ export function ProductMenu({ onAddToCart, viewMode = 'grid', isHeaderVisible = 
                   "relative z-10 px-4 h-10 flex items-center justify-center whitespace-nowrap text-[10px] font-black tracking-[0.2em] uppercase transition-colors duration-500",
                   selectedCategory === null ? "text-black" : "text-white/40 hover:text-white"
                 )}>
-                  ALL MODULES
+                  ALL ITEMS
                 </span>
               </div>
 
@@ -144,7 +144,7 @@ export function ProductMenu({ onAddToCart, viewMode = 'grid', isHeaderVisible = 
             animate={{ opacity: 1 }}
             className="text-center py-32 border border-dashed border-white/5 rounded-3xl"
           >
-            <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em]">No modules available in this cluster</p>
+            <p className="text-[10px] text-white/20 font-black uppercase tracking-[0.3em]">No items available in this cluster</p>
           </motion.div>
         ) : (
           <div className={cn(
@@ -190,12 +190,12 @@ export function ProductMenu({ onAddToCart, viewMode = 'grid', isHeaderVisible = 
                       {/* Floating Badge */}
                       <div className="absolute top-4 left-4 flex gap-2">
                         {product.available ? (
-                          <div className="px-3 py-1 bg-black/40 backdrop-blur-md rounded-full border border-white/10">
-                            <span className="text-[8px] font-black text-white/80 tracking-widest uppercase">READY</span>
+                          <div className="px-3 h-6 flex items-center justify-center bg-black/40 backdrop-blur-md rounded-full border border-white/10">
+                            <span className="text-[7px] font-black text-white/80 tracking-widest uppercase leading-none">READY</span>
                           </div>
                         ) : (
-                          <div className="px-3 py-1 bg-tesla-red/20 backdrop-blur-md rounded-full border border-tesla-red/20">
-                            <span className="text-[8px] font-black text-tesla-red tracking-widest uppercase">DEPLETED</span>
+                          <div className="px-3 h-6 flex items-center justify-center bg-tesla-red/20 backdrop-blur-md rounded-full border border-tesla-red/20">
+                            <span className="text-[7px] font-black text-tesla-red tracking-widest uppercase leading-none">DEPLETED</span>
                           </div>
                         )}
                       </div>
@@ -231,7 +231,7 @@ export function ProductMenu({ onAddToCart, viewMode = 'grid', isHeaderVisible = 
 
                       <div className="mt-8 flex items-center justify-between">
                         <div className="flex flex-col">
-                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">Price Module</span>
+                          <span className="text-[8px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">Price</span>
                           <span className="text-3xl font-black text-white tracking-tighter">₹{product.price}</span>
                         </div>
 
