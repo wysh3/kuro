@@ -56,9 +56,14 @@ service cloud.firestore {
     }
 
     // Campus status - kitchen staff write, public read
+    // Authenticated users can update dailyOrderCount when creating orders
     match /campus_status/{document=**} {
       allow read: if true;
+      // Kitchen staff can do any write
       allow write: if isKitchenStaff();
+      // Authenticated users can update order counter fields when creating orders
+      allow update: if isAuthenticated() &&
+                      request.resource.data.diff(resource.data).affectedKeys().hasOnly(['dailyOrderCount', 'lastOrderReset']);
     }
   }
 }
