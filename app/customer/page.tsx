@@ -254,6 +254,7 @@ export default function CustomerPage() {
                         <TrendingUp className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-green-500" />
                         <span className="text-[9px] sm:text-[10px] font-black text-white/60 tracking-widest uppercase">Realtime</span>
                       </div>
+                      <RushWarningBanner minimal />
                     </div>
 
                     <motion.button
@@ -284,9 +285,7 @@ export default function CustomerPage() {
 
           <ActiveOrders />
 
-          <div className="flex flex-col gap-12">
-            <RushWarningBanner />
-          </div>
+
 
           <div className="space-y-2">
             <div className="flex items-center justify-between px-2">
