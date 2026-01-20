@@ -46,7 +46,13 @@ export default function OrderTrackingPage() {
   }, [searchParams])
 
   useEffect(() => {
-    onMessageListener()
+    const unsubscribe = onMessageListener()
+    return () => {
+      if (typeof unsubscribe === 'function') {
+        const unmount: any = unsubscribe
+        unmount()
+      }
+    }
   }, [notificationStatus])
 
   const requestNotifications = async () => {

@@ -64,9 +64,21 @@ export function BottomNav() {
                                     isActive && "drop-shadow-[0_0_12px_rgba(255,255,255,0.8)]"
                                 )} />
                                 {item.id === 'cart' && cart.length > 0 && (
-                                    <div className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 bg-white text-black text-[9px] font-black rounded-full flex items-center justify-center border-2 border-black">
-                                        {cart.reduce((acc, i) => acc + i.quantity, 0)}
-                                    </div>
+                                    <motion.div
+                                        key="cart-count"
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                                        className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 bg-white text-black text-[9px] font-black rounded-full flex items-center justify-center border-2 border-black"
+                                    >
+                                        <motion.span
+                                            key={cart.length}
+                                            initial={{ y: 5 }}
+                                            animate={{ y: 0 }}
+                                        >
+                                            {cart.reduce((acc, i) => acc + i.quantity, 0)}
+                                        </motion.span>
+                                    </motion.div>
                                 )}
                             </motion.div>
 

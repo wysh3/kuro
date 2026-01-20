@@ -18,13 +18,30 @@ export function ActiveOrders() {
     useEffect(() => {
         if (authLoading) return
 
-        if (!user) {
+        let userId: string | null = null
+
+        if (user) {
+            userId = user.uid
+        } else {
+            // Check for guest user in localStorage
+            try {
+                const guestUserData = localStorage.getItem("user")
+                if (guestUserData) {
+                    const guestUser = JSON.parse(guestUserData)
+                    userId = guestUser.id
+                }
+            } catch (error) {
+                console.error('Error parsing guest user data:', error)
+            }
+        }
+
+        if (!userId) {
             setLoading(false)
             return
         }
 
         const unsubscribe = subscribeToUserActiveOrders(
-            user.uid,
+            userId,
             (activeOrders) => {
                 setOrders(activeOrders)
                 setLoading(false)

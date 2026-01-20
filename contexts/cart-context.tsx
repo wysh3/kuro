@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { TimeSlot } from '@/lib/time-slots';
+import { toast } from 'sonner';
 
 export interface CartItem {
     id: string;
@@ -58,6 +59,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 );
             }
             return [...prevCart, { ...product, quantity: 1 }];
+        });
+
+        toast.success(`${product.name} added to order`, {
+            description: "View and checkout in your cart.",
+            duration: 2500,
         });
     };
 

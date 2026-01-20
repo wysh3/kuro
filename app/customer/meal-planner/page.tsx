@@ -14,11 +14,22 @@ import { toast } from 'sonner';
 import { Activity, Shield, Zap, Target } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Spinner } from '@/components/ui/spinner';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function MealPlannerPage() {
     const router = useRouter();
+    const { user, loading: authLoading } = useAuth();
     const { addToCart, cart, setIsDrawerOpen } = useCart();
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!authLoading && !user) {
+            router.push('/');
+        }
+    }, [user, authLoading, router]);
+
+    if (authLoading) return <div className="min-h-screen bg-black" />;
+    if (!user) return null;
 
     const [messages, setMessages] = useState<ChatMessage[]>([
         {
@@ -164,7 +175,6 @@ export default function MealPlannerPage() {
             name: item.name,
             price: item.price
         });
-        toast.success(`Added ${item.name} to cart`);
         if (showCartAfter) {
             setIsDrawerOpen(true);
         }

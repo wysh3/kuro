@@ -27,10 +27,10 @@ export interface Order {
     userId: string
     paymentMethod?: 'upi' | 'card'
     customerName?: string
-    razorpayPaymentId: string
-    razorpayOrderId: string
-    paymentVerified: boolean
-    paidAt: Timestamp
+    razorpayPaymentId?: string
+    razorpayOrderId?: string
+    paymentVerified?: boolean
+    paidAt?: Timestamp
     pickupTime?: Timestamp
     pickupSlot?: string
     discountApplied?: number

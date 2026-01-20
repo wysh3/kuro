@@ -79,7 +79,8 @@ export default function KitchenPage() {
     }
   }
 
-  const preparingOrders = useMemo(() => orders.filter((o) => o.status === 'kitchen_received' || o.status === 'preparing'), [orders])
+  const kitchenReceivedOrders = useMemo(() => orders.filter((o) => o.status === 'kitchen_received'), [orders])
+  const preparingOrders = useMemo(() => orders.filter((o) => o.status === 'preparing'), [orders])
   const readyOrders = useMemo(() => orders.filter((o) => o.status === 'ready'), [orders])
 
   const formatTime = (timestamp: any): string => {
@@ -195,7 +196,9 @@ export default function KitchenPage() {
               <div className="flex flex-col">
                 <span className="text-[7px] font-black text-white/20 uppercase tracking-[0.2em] mb-1">Efficiency Rating</span>
                 <div className="flex items-baseline gap-1">
-                  <span className="text-2xl font-black tracking-tighter">98.4</span>
+                  <span className="text-2xl font-black tracking-tighter">
+                    {campusStatus ? (Math.max(85, 99.5 - (campusStatus.crowdScore * 0.1)).toFixed(1)) : '---'}
+                  </span>
                   <span className="text-[10px] font-black text-green-500">%</span>
                 </div>
               </div>
@@ -205,12 +208,14 @@ export default function KitchenPage() {
                   <div className="w-24 h-1 bg-white/5 rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: '65%' }}
+                      animate={{ width: campusStatus ? `${Math.min(100, (campusStatus.activeOrders / campusStatus.kitchenCapacity) * 100)}%` : '0%' }}
                       transition={{ duration: 2, ease: "easeOut" }}
                       className="h-full bg-apple-blue shadow-[0_0_15px_rgba(0,122,255,0.6)]"
                     />
                   </div>
-                  <span className="text-[8px] font-black font-mono">65% CAP</span>
+                  <span className="text-[8px] font-black font-mono">
+                    {campusStatus ? Math.round((campusStatus.activeOrders / campusStatus.kitchenCapacity) * 100) : 0}% CAP
+                  </span>
                 </div>
               </div>
             </div>
@@ -221,7 +226,7 @@ export default function KitchenPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <OrdersColumn
             title="Order Queue"
-            orders={[]}
+            orders={kitchenReceivedOrders}
             accent="border-yellow-500"
             formatTime={formatTime}
             onUpdateStatus={handleUpdateStatus}

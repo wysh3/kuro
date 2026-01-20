@@ -169,11 +169,27 @@ export default function CustomerPage() {
               className="relative text-white/60 hover:text-white group bg-white/5 rounded-xl border border-white/5"
             >
               <ShoppingCart className="w-4.5 h-4.5" />
-              {cart.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-black text-[10px] font-black rounded-lg border-2 border-black flex items-center justify-center shadow-premium">
-                  {cart.reduce((acc, item) => acc + item.quantity, 0)}
-                </span>
-              )}
+              <AnimatePresence mode="popLayout">
+                {cart.length > 0 && (
+                  <motion.span
+                    key="cart-badge"
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 25 }}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-black text-[10px] font-black rounded-lg border-2 border-black flex items-center justify-center shadow-premium"
+                  >
+                    <motion.span
+                      key={cart.length}
+                      initial={{ y: 5, opacity: 0 }}
+                      animate={{ y: 0, opacity: 1 }}
+                      className="inline-block"
+                    >
+                      {cart.reduce((acc, item) => acc + item.quantity, 0)}
+                    </motion.span>
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </Button>
 
             {userProfile?.kitchenStaff && (

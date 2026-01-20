@@ -83,5 +83,11 @@ service cloud.firestore {
         'lastUpdated'
       ]);
     }
+
+    // FCM Tokens - separate collection to support authenticated users
+    match /fcm_tokens/{userId} {
+      allow read: if isOwner(userId) || isKitchenStaff();
+      allow write: if isOwner(userId);
+    }
   }
 }

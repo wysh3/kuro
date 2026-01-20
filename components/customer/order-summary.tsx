@@ -89,11 +89,13 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
       setError(null)
     })
     try {
+      const guestId = !firebaseUser ? JSON.parse(localStorage.getItem("user") || '{}').id : null
+
       const orderId = await createOrder({
         items: cart,
         total: paymentTotal,
         status: 'kitchen_received',
-        userId: firebaseUser?.uid || user?.id || 'guest',
+        userId: firebaseUser?.uid || user?.id || guestId || 'guest',
         paymentMethod: paymentMethod || 'upi',
         customerName: userProfile?.displayName || firebaseUser?.displayName || user?.name || 'Guest',
         razorpayPaymentId: response.razorpay_payment_id,

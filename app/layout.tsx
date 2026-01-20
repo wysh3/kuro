@@ -28,6 +28,7 @@ export const viewport = {
 }
 
 import { PageTransition } from "@/components/ui/page-transition"
+import { Toaster } from "@/components/ui/sonner"
 
 export default function RootLayout({
   children,
@@ -42,6 +43,7 @@ export default function RootLayout({
             <PageTransition>
               {children}
             </PageTransition>
+            <Toaster />
             <Analytics />
           </CartProvider>
         </ErrorBoundary>
