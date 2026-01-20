@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, startTransition } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
@@ -163,27 +163,16 @@ export default function CustomerPage() {
 
           <div className="flex items-center gap-2 sm:gap-4">
             <Button
-              onClick={() => setIsDrawerOpen(true)}
+              onClick={() => startTransition(() => setIsDrawerOpen(true))}
               variant="ghost"
               size="icon"
               className="relative text-white/60 hover:text-white group bg-white/5 rounded-xl border border-white/5"
             >
-              <motion.div
-                key={cart.length}
-                initial={{ scale: 1 }}
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ duration: 0.3 }}
-              >
-                <ShoppingCart className="w-4.5 h-4.5" />
-              </motion.div>
+              <ShoppingCart className="w-4.5 h-4.5" />
               {cart.length > 0 && (
-                <motion.div
-                  initial={{ scale: 0, y: 10 }}
-                  animate={{ scale: 1, y: 0 }}
-                  className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-black text-[10px] font-black rounded-lg border-2 border-black flex items-center justify-center shadow-premium"
-                >
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white text-black text-[10px] font-black rounded-lg border-2 border-black flex items-center justify-center shadow-premium">
                   {cart.reduce((acc, item) => acc + item.quantity, 0)}
-                </motion.div>
+                </span>
               )}
             </Button>
 

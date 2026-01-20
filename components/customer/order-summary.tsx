@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, startTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -84,8 +84,10 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
   }
 
   const handlePaymentSuccess = async (response: RazorpayPaymentResponse) => {
-    setCreatingOrder(true)
-    setError(null)
+    startTransition(() => {
+      setCreatingOrder(true)
+      setError(null)
+    })
     try {
       const orderId = await createOrder({
         items: cart,
@@ -103,23 +105,34 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
         discountApplied: discountAmount
       })
 
-      clearCart()
-      router.push(`/customer/order/${orderId}?justPlaced=true`)
+      const { setIsDrawerOpen } = useCart()
+      startTransition(() => {
+        clearCart()
+        router.push(`/customer/order/${orderId}?justPlaced=true`)
+      })
     } catch (err) {
-      setError('Order creation failed. Please contact support.')
-      setCreatingOrder(false)
+      startTransition(() => {
+        setError('Order creation failed. Please contact support.')
+        setCreatingOrder(false)
+      })
     }
   }
 
   const initiatePayment = async () => {
-    setLoading(true)
-    setError(null)
+    startTransition(() => {
+      setLoading(true)
+      setError(null)
+    })
     try {
       const orderId = await createRazorpayOrder(paymentTotal)
-      setRazorpayOrderId(orderId)
+      startTransition(() => {
+        setRazorpayOrderId(orderId)
+      })
     } catch (err) {
-      setError('Payment initialization failed.')
-      setLoading(false)
+      startTransition(() => {
+        setError('Payment initialization failed.')
+        setLoading(false)
+      })
     }
   }
 
@@ -189,25 +202,25 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
         </div>
 
         <div className="pt-8 border-t border-white/5 space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Pickup Time</p>
-              <p className="text-xs font-black uppercase tracking-widest text-white/80">
-                {selectedSlot
-                  ? selectedSlot.displayTime === 'ASAP'
-                    ? 'ASAP (~15 min)'
-                    : selectedSlot.displayTime
-                  : 'AS SOON AS POSSIBLE'}
-              </p>
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Pickup Time</p>
+                <p className="text-xs font-black uppercase tracking-widest text-white/80">
+                  {selectedSlot
+                    ? selectedSlot.displayTime === 'ASAP'
+                      ? 'ASAP (~15 min)'
+                      : selectedSlot.displayTime
+                    : 'AS SOON AS POSSIBLE'}
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => startTransition(() => setShowSchedule(!showSchedule))}
+                className="h-10 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest px-5"
+              >
+                {showSchedule ? 'CANCEL' : 'SCHEDULE'}
+              </Button>
             </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowSchedule(!showSchedule)}
-              className="h-10 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest px-5"
-            >
-              {showSchedule ? 'CANCEL' : 'SCHEDULE'}
-            </Button>
-          </div>
 
           <AnimatePresence>
             {showSchedule && (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, startTransition } from 'react'
 import {
     Sheet,
     SheetContent,
@@ -30,9 +30,11 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
     const isSheetOpen = isOpen !== undefined ? isOpen : isDrawerOpen
     const handleOpenChange = (open: boolean) => {
-        setIsDrawerOpen(open)
-        if (onClose && !open) onClose()
-        if (!open) setShowOrder(false)
+        startTransition(() => {
+            setIsDrawerOpen(open)
+            if (onClose && !open) onClose()
+            if (!open) setShowOrder(false)
+        })
     }
 
     const itemCount = cart.reduce((acc, item) => acc + item.quantity, 0)
@@ -145,7 +147,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 {cart.length > 0 && !showOrder && (
                     <div className="p-8 pb-12 bg-black/40 backdrop-blur-xl border-t border-white/10">
                         <Button
-                            onClick={() => setShowOrder(true)}
+                            onClick={() => startTransition(() => setShowOrder(true))}
                             className="w-full h-16 bg-white text-black hover:bg-white/90 rounded-[1.5rem] text-xs font-black uppercase tracking-[0.3em] shadow-premium active:scale-95 transition-all group border-none"
                         >
                             INITIATE CHECKOUT
