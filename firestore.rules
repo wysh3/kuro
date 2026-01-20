@@ -35,18 +35,19 @@ service cloud.firestore {
 
     // Orders - authenticated users & guests create, users read own, kitchen staff read all
     match /orders/{orderId} {
-      // Read: Owner, guest order creator, or kitchen staff
+      // Read: Owner, guest order creator, kitchen staff, or ANYONE for active orders (needed for crowd status)
       allow read: if isOwner(resource.data.userId)
                     || resource.data.userId == 'guest'
-                    || isKitchenStaff();
+                    || isKitchenStaff()
+                    || (resource.data.status in ['kitchen_received', 'preparing', 'ready']);
 
       // Create: Authenticated, guest, or test user (for Phase 4 testing)
       allow create: if isAuthenticated()
                        || isGuestOrder()
                        || isTestOrder();
 
-      // Update: Kitchen staff only
-      allow update: if isKitchenStaff();
+      // Update: Kitchen staff, or owner for cancellation, or anyone for status if it's needed (but usually kitchen only)
+      allow update: if isKitchenStaff() || isOwner(resource.data.userId);
     }
 
     // User profiles - owners read/write own, kitchen staff can read
@@ -57,12 +58,30 @@ service cloud.firestore {
 
     // Campus status - kitchen staff write, public read
     // All users (including guests) can update dailyOrderCount when creating orders
+    // and update crowd intelligence fields
     match /campus_status/{document=**} {
       allow read: if true;
       // Kitchen staff can do any write
       allow write: if isKitchenStaff();
-      // All users can update order counter fields when creating orders
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['dailyOrderCount', 'lastOrderReset']);
+      // All users can update specific fields: 
+      // 1. Order counter (for transactions in createOrder)
+      // 2. Crowd status fields (for updateCrowdStatus)
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        'dailyOrderCount', 
+        'lastOrderReset',
+        'activeOrders',
+        'activeOrderIds',
+        'averagePrepTime',
+        'totalPrepTimeRemaining',
+        'kitchenCapacity',
+        'staffOnline',
+        'crowdLevel',
+        'crowdScore',
+        'estimatedWait',
+        'isManualOverride',
+        'calculationMethod',
+        'lastUpdated'
+      ]);
     }
   }
 }
