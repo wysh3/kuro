@@ -105,12 +105,13 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
         discountApplied: discountAmount
       })
 
-      const { setIsDrawerOpen } = useCart()
+      // Clear cart and navigate to order page
       startTransition(() => {
         clearCart()
         router.push(`/customer/order/${orderId}?justPlaced=true`)
       })
     } catch (err) {
+      console.error('Order creation error:', err)
       startTransition(() => {
         setError('Order creation failed. Please contact support.')
         setCreatingOrder(false)
@@ -202,25 +203,25 @@ export function OrderSummary({ cart, total: subtotal, user, onBack, onRemoveItem
         </div>
 
         <div className="pt-8 border-t border-white/5 space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Pickup Time</p>
-                <p className="text-xs font-black uppercase tracking-widest text-white/80">
-                  {selectedSlot
-                    ? selectedSlot.displayTime === 'ASAP'
-                      ? 'ASAP (~15 min)'
-                      : selectedSlot.displayTime
-                    : 'AS SOON AS POSSIBLE'}
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                onClick={() => startTransition(() => setShowSchedule(!showSchedule))}
-                className="h-10 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest px-5"
-              >
-                {showSchedule ? 'CANCEL' : 'SCHEDULE'}
-              </Button>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-[9px] font-black text-white/20 uppercase tracking-[0.2em]">Pickup Time</p>
+              <p className="text-xs font-black uppercase tracking-widest text-white/80">
+                {selectedSlot
+                  ? selectedSlot.displayTime === 'ASAP'
+                    ? 'ASAP (~15 min)'
+                    : selectedSlot.displayTime
+                  : 'AS SOON AS POSSIBLE'}
+              </p>
             </div>
+            <Button
+              variant="outline"
+              onClick={() => startTransition(() => setShowSchedule(!showSchedule))}
+              className="h-10 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 text-[10px] font-black uppercase tracking-widest px-5"
+            >
+              {showSchedule ? 'CANCEL' : 'SCHEDULE'}
+            </Button>
+          </div>
 
           <AnimatePresence>
             {showSchedule && (
