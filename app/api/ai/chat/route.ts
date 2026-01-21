@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { handleKuroChat } from '@/lib/ai/chat-handler'
-import { getUserPreferences } from '@/lib/firebase/ai-db'
-import { getOrdersByUserId } from '@/lib/firebase/db'
+import { getUserPreferences, createKuroSession, saveKuroMessage } from '@/lib/firebase/ai-db-admin'
+import { getMenuItems, getOrdersByUserId } from '@/lib/firebase/db-admin'
 
 export async function POST(req: NextRequest) {
     try {

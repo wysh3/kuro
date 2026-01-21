@@ -1,5 +1,5 @@
-import { Timestamp } from 'firebase/firestore'
-import { getMenuItems, getOrdersByUserId } from '../firebase/db'
+import admin from 'firebase-admin'
+import { getMenuItems, getOrdersByUserId } from '../firebase/db-admin'
 import { MenuItem } from '../types'
 
 export async function executeFunction(
@@ -100,7 +100,7 @@ async function handlePlaceOrder(args: any, userId: string) {
 async function handleCreateMealPlan(args: any, userId: string) {
     try {
         const allItems = await getMenuItems()
-        const { getUserPreferences, saveMealPlan } = await import('../firebase/ai-db')
+        const { getUserPreferences, saveMealPlan } = await import('../firebase/ai-db-admin')
         const prefs = await getUserPreferences(userId)
 
         const dietaryRestrictions = args.dietaryRestrictions || prefs?.dietary.restrictions || []
@@ -132,13 +132,13 @@ async function handleCreateMealPlan(args: any, userId: string) {
             }
         }
 
-        const planMeals = []
+        const planMeals: any[] = []
         const durationDays = args.duration === 'weekly' ? 7 : args.duration === 'monthly' ? 30 : 1
         const startDate = new Date(args.startDate || new Date())
         const endDate = new Date(startDate)
         endDate.setDate(startDate.getDate() + durationDays - 1)
 
-        const { saveMealPlan: savePlan, getUserPreferences: getPrefs } = await import('../firebase/ai-db')
+        const { saveMealPlan: savePlan, getUserPreferences: getPrefs } = await import('../firebase/ai-db-admin')
         const userPrefs = await getPrefs(userId)
         const targetCalories = args.calorieTarget || (userPrefs?.health.targetWeight ? 1800 : 2200)
 
@@ -173,11 +173,11 @@ async function handleCreateMealPlan(args: any, userId: string) {
         const planId = await savePlan(userId, {
             userId,
             type: args.duration,
-            startDate: Timestamp.fromDate(startDate),
-            endDate: Timestamp.fromDate(endDate),
+            startDate: admin.firestore.Timestamp.fromDate(startDate),
+            endDate: admin.firestore.Timestamp.fromDate(endDate),
             meals: planMeals.map((m, idx) => ({
                 id: Math.random().toString(36).substr(2, 9),
-                date: Timestamp.fromDate(new Date(startDate.getTime() + Math.floor(idx / 3) * 24 * 60 * 60 * 1000)),
+                date: admin.firestore.Timestamp.fromDate(new Date(startDate.getTime() + Math.floor(idx / 3) * 24 * 60 * 60 * 1000)),
                 mealType: m.mealType as any,
                 items: m.items,
                 totalNutrition: {
@@ -288,7 +288,7 @@ async function handleAnalyzePatterns(args: any, userId: string) {
 
 async function handleGetRecommendations(args: any, userId: string) {
     try {
-        const { getUserPreferences } = await import('../firebase/ai-db')
+        const { getUserPreferences } = await import('../firebase/ai-db-admin')
         const prefs = await getUserPreferences(userId)
         const allItems = await getMenuItems()
         const orders = await getOrdersByUserId(userId)
