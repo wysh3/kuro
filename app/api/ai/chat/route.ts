@@ -26,9 +26,6 @@ export async function POST(req: NextRequest) {
             recentOrders: orders.slice(0, 10).map(o => o.id)
         }
 
-        // Import session management functions
-        const { createKuroSession, saveKuroMessage } = await import('@/lib/firebase/ai-db')
-
         // Process chat
         const result = await handleKuroChat(userId, sessionId, message, history, context, attachments)
 
