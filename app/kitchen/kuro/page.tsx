@@ -201,11 +201,11 @@ export default function KitchenKuroPage() {
     if (!user) return null;
 
     return (
-        <div className="min-h-screen bg-black flex flex-col selection:bg-purple-500/30 relative overflow-hidden">
-            {/* Ambient Background Glows - Kitchen Theme (Blue/Teal) */}
+        <div className="min-h-screen bg-black flex flex-col selection:bg-white/20 relative overflow-hidden">
+            {/* Ambient Background Glows - Deep Obsidian Theme */}
             <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full animate-pulse" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-teal-900/10 blur-[120px] rounded-full animate-pulse delay-1000" />
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 blur-[120px] rounded-full opacity-50" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/5 blur-[120px] rounded-full opacity-50" />
             </div>
 
             <div className="max-w-6xl w-full mx-auto flex-1 flex flex-col p-4 md:p-8 relative z-10 h-screen">
@@ -232,13 +232,13 @@ export default function KitchenKuroPage() {
                                 <History className="w-5 h-5 sm:w-6 sm:h-6" />
                             </button>
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500 to-teal-600 p-[1px]">
-                                    <div className="w-full h-full bg-black rounded-2xl flex items-center justify-center">
-                                        <Bot className="w-6 h-6 text-white" />
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 p-[1px] border border-white/10">
+                                    <div className="w-full h-full bg-black/50 rounded-2xl flex items-center justify-center">
+                                        <Bot className="w-6 h-6 text-white shadow-glow" />
                                     </div>
                                 </div>
                                 <div className="hidden sm:block">
-                                    <h1 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.4em] leading-none mb-1">Kitchen Ops</h1>
+                                    <h1 className="text-[10px] font-black text-white/50 uppercase tracking-[0.4em] leading-none mb-1">Kitchen Ops</h1>
                                     <p className="text-sm font-black text-white uppercase tracking-widest">KURO INTELLIGENCE</p>
                                 </div>
                             </div>
@@ -276,8 +276,8 @@ export default function KitchenKuroPage() {
                                     className={`flex gap-4 sm:gap-6 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     {msg.role === 'assistant' && (
-                                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500/20 to-teal-500/20 border border-white/10 flex-shrink-0 flex items-center justify-center mt-1">
-                                            <Bot className="w-6 h-6 text-blue-400" />
+                                        <div className="w-11 h-11 rounded-2xl bg-white/5 border border-white/10 flex-shrink-0 flex items-center justify-center mt-1">
+                                            <Bot className="w-5 h-5 text-white" />
                                         </div>
                                     )}
 
@@ -285,8 +285,8 @@ export default function KitchenKuroPage() {
                                         <div className={cn(
                                             "px-7 py-5 rounded-[2.5rem] relative transition-all duration-500 text-sm",
                                             msg.role === 'user'
-                                                ? 'bg-white text-black font-black italic rounded-tr-sm'
-                                                : 'glass-panel border-white/10 text-white/90 font-medium rounded-tl-sm bg-white/[0.03]'
+                                                ? 'bg-white text-black font-black tracking-tight rounded-tr-sm shadow-[0_0_30px_rgba(255,255,255,0.1)]'
+                                                : 'glass-panel border-white/5 text-white/90 font-medium rounded-tl-sm bg-white/[0.02]'
                                         )}>
                                             <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                                         </div>
@@ -308,13 +308,13 @@ export default function KitchenKuroPage() {
 
                         {loading && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-4 sm:gap-6">
-                                <div className="w-11 h-11 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
-                                    <Sparkles className="w-5 h-5 text-blue-400 animate-pulse" />
+                                <div className="w-11 h-11 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5">
+                                    <Sparkles className="w-5 h-5 text-white/20 animate-pulse" />
                                 </div>
-                                <div className="glass-panel px-6 py-4 rounded-[1.5rem] rounded-tl-sm border border-white/10 flex gap-2 items-center bg-white/[0.03]">
-                                    <span className="w-1.5 h-1.5 bg-blue-500/60 rounded-full animate-bounce"></span>
-                                    <span className="w-1.5 h-1.5 bg-blue-500/60 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                                    <span className="w-1.5 h-1.5 bg-blue-500/60 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                                <div className="glass-panel px-6 py-4 rounded-[1.5rem] rounded-tl-sm border border-white/5 flex gap-2 items-center bg-white/[0.02]">
+                                    <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce"></span>
+                                    <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                                    <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:0.4s]"></span>
                                 </div>
                             </motion.div>
                         )}
@@ -360,7 +360,7 @@ export default function KitchenKuroPage() {
                                     }}
                                     placeholder="TRANSMIT TO OPS COMMAND..."
                                     disabled={loading}
-                                    className="w-full h-16 sm:h-20 glass-panel border-white/10 rounded-[2rem] px-8 text-sm font-black text-white placeholder-white/10 focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/5 transition-all shadow-2xl tracking-widest uppercase"
+                                    className="w-full h-16 sm:h-20 glass-panel border-white/5 rounded-[2rem] px-8 text-sm font-black text-white placeholder-white/20 focus:outline-none focus:bg-white/[0.08] transition-all shadow-2xl tracking-widest uppercase"
                                 />
                                 <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-20 group-focus-within:opacity-100 transition-opacity hidden sm:flex">
                                     <span className="text-[10px] font-black text-white tracking-[0.2em]">ENTER TO SEND</span>
@@ -369,14 +369,14 @@ export default function KitchenKuroPage() {
                             <Button
                                 onClick={() => handleSendMessage(input)}
                                 disabled={loading || !input.trim()}
-                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-[2.2rem] bg-gradient-to-br from-blue-500 to-teal-600 text-white hover:shadow-[0_0_30px_rgba(59,130,246,0.4)] transition-all active:scale-95 flex items-center justify-center p-0 border-none group"
+                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-[2.2rem] bg-white text-black hover:bg-white/90 hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all active:scale-95 flex items-center justify-center p-0 border-none group"
                             >
                                 {loading ? (
                                     <div className="w-8 h-8 flex items-center justify-center">
                                         <div className="w-5 h-5 border-2 border-white/10 border-t-white rounded-full animate-spin" />
                                     </div>
                                 ) : (
-                                    <Send className="w-7 h-7 sm:w-8 sm:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                    <Send className="w-7 h-7 sm:w-8 sm:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform text-black" />
                                 )}
                             </Button>
                         </div>

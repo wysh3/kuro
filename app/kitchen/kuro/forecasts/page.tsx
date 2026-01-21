@@ -97,7 +97,7 @@ export default function ForecastsPage() {
                             <ArrowLeft className="w-6 h-6 text-white/40" />
                         </button>
                         <div>
-                            <h1 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.4em] leading-none mb-1">Kuro Intelligence</h1>
+                            <h1 className="text-[10px] font-black text-white/50 uppercase tracking-[0.4em] leading-none mb-1">Kuro Intelligence</h1>
                             <p className="text-2xl font-black text-white uppercase tracking-widest">DEMAND FORECASTS</p>
                         </div>
                     </div>
@@ -111,20 +111,20 @@ export default function ForecastsPage() {
 
                 {/* Metrics Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="glass-panel p-6 rounded-[2rem] border-white/10 bg-white/[0.02]">
+                    <div className="glass-panel p-6 rounded-[2rem] border-white/5 bg-white/[0.02]">
                         <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Total Historic Orders</p>
                         <p className="text-4xl font-black text-white">{totalOrders}</p>
                     </div>
-                    <div className="glass-panel p-6 rounded-[2rem] border-white/10 bg-white/[0.02]">
+                    <div className="glass-panel p-6 rounded-[2rem] border-white/5 bg-white/[0.02]">
                         <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Peak Hour Volume</p>
                         <p className="text-4xl font-black text-white">
                             {Math.max(...hourlyData.map(h => h.orders))}
                             <span className="text-sm text-white/40 font-medium ml-2">orders/hr</span>
                         </p>
                     </div>
-                    <div className="glass-panel p-6 rounded-[2rem] border-white/10 bg-white/[0.02]">
+                    <div className="glass-panel p-6 rounded-[2rem] border-white/5 bg-white/[0.02]">
                         <p className="text-[10px] font-black text-white/40 uppercase tracking-widest mb-2">Predicted Growth</p>
-                        <p className="text-4xl font-black text-green-400 flex items-center gap-2">
+                        <p className="text-4xl font-black text-green-500 flex items-center gap-2">
                             +12% <TrendingUp className="w-6 h-6" />
                         </p>
                     </div>
@@ -133,15 +133,15 @@ export default function ForecastsPage() {
                 {/* Charts */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Hourly Distribution */}
-                    <div className="glass-panel p-8 rounded-[2.5rem] border-white/10 bg-white/[0.02]">
+                    <div className="glass-panel p-8 rounded-[2.5rem] border-white/5 bg-white/[0.02]">
                         <h3 className="text-sm font-black text-white uppercase tracking-widest mb-8">Hourly Traffic Distribution</h3>
                         <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
                                 <AreaChart data={hourlyData}>
                                     <defs>
                                         <linearGradient id="colorOrders" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                                            <stop offset="5%" stopColor="#ffffff" stopOpacity={0.3} />
+                                            <stop offset="95%" stopColor="#ffffff" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
                                     <XAxis dataKey="hour" stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} />
@@ -150,14 +150,14 @@ export default function ForecastsPage() {
                                         contentStyle={{ backgroundColor: '#000', border: '1px solid #333', borderRadius: '12px' }}
                                         itemStyle={{ color: '#fff' }}
                                     />
-                                    <Area type="monotone" dataKey="orders" stroke="#3b82f6" fillOpacity={1} fill="url(#colorOrders)" strokeWidth={3} />
+                                    <Area type="monotone" dataKey="orders" stroke="#ffffff" fillOpacity={1} fill="url(#colorOrders)" strokeWidth={3} />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
 
                     {/* Weekly Trend */}
-                    <div className="glass-panel p-8 rounded-[2.5rem] border-white/10 bg-white/[0.02]">
+                    <div className="glass-panel p-8 rounded-[2.5rem] border-white/5 bg-white/[0.02]">
                         <h3 className="text-sm font-black text-white uppercase tracking-widest mb-8">7-Day Trend Analysis</h3>
                         <div className="h-[300px] w-full">
                             <ResponsiveContainer width="100%" height="100%">
@@ -169,14 +169,14 @@ export default function ForecastsPage() {
                                         contentStyle={{ backgroundColor: '#000', border: '1px solid #333', borderRadius: '12px' }}
                                         itemStyle={{ color: '#fff' }}
                                     />
-                                    <Bar dataKey="orders" fill="#10b981" radius={[4, 4, 0, 0]} />
+                                    <Bar dataKey="orders" fill="#22c55e" radius={[4, 4, 0, 0]} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
                     </div>
                 </div>
 
-                <div className="glass-panel p-8 rounded-[2.5rem] border-white/10 bg-white/[0.02] flex items-center justify-between">
+                <div className="glass-panel p-8 rounded-[2.5rem] border-white/5 bg-white/[0.02] flex items-center justify-between">
                     <div>
                         <h3 className="text-sm font-black text-white uppercase tracking-widest mb-1">AI Recommendation</h3>
                         <p className="text-white/60 text-sm max-w-xl">
@@ -186,7 +186,7 @@ export default function ForecastsPage() {
                     </div>
                     <button
                         onClick={() => router.push('/kitchen/kuro')}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs uppercase tracking-widest transition-all"
+                        className="px-6 py-3 bg-white text-black hover:bg-white/90 rounded-xl font-bold text-xs uppercase tracking-widest transition-all hover:scale-105"
                     >
                         Detailed Analysis
                     </button>

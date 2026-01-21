@@ -383,10 +383,10 @@ export default function KuroPage() {
 
     return (
         <div className="min-h-screen bg-black flex flex-col selection:bg-purple-500/30 relative overflow-hidden">
-            {/* Ambient Background Glows */}
+            {/* Ambient Background Glows - Deep Obsidian Theme */}
             <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-purple-900/10 blur-[120px] rounded-full animate-pulse" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-900/10 blur-[120px] rounded-full animate-pulse delay-1000" />
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 blur-[120px] rounded-full opacity-50" />
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/5 blur-[120px] rounded-full opacity-50" />
             </div>
 
             <div className="max-w-4xl w-full mx-auto flex-1 flex flex-col p-4 md:p-8 relative z-10 h-screen">
@@ -413,30 +413,32 @@ export default function KuroPage() {
                                 <History className="w-5 h-5 sm:w-6 sm:h-6" />
                             </button>
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-blue-600 p-[1px]">
-                                    <div className="w-full h-full bg-black rounded-2xl flex items-center justify-center">
-                                        <Bot className="w-6 h-6 text-white" />
+                                <div className="w-12 h-12 rounded-2xl bg-white/5 p-[1px] border border-white/10">
+                                    <div className="w-full h-full bg-black/50 rounded-2xl flex items-center justify-center">
+                                        <Bot className="w-6 h-6 text-white shadow-glow" />
                                     </div>
                                 </div>
                                 <div className="hidden sm:block">
-                                    <h1 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em] leading-none mb-1">Neural Core v2.0</h1>
-                                    <p className="text-sm font-black text-white uppercase tracking-widest">KURO AI AGENT</p>
+                                    <h1 className="text-[10px] font-black text-white/50 uppercase tracking-[0.4em] leading-none mb-1">Personal Agent</h1>
+                                    <p className="text-sm font-black text-white uppercase tracking-widest">KURO SYSTEM</p>
                                 </div>
                             </div>
                         </div>
 
                         <div className="flex items-center gap-2 sm:gap-4">
                             <button
-                                onClick={() => router.push('/customer/kuro/analytics')}
-                                className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all flex items-center justify-center text-white/40 hover:text-white hidden sm:flex"
-                            >
-                                <BarChart2 className="w-5 h-5" />
-                            </button>
-                            <button
                                 onClick={() => router.push('/customer/kuro/meal-plans')}
                                 className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all flex items-center justify-center text-white/40 hover:text-white hidden sm:flex"
+                                title="Active Protocols"
                             >
                                 <Utensils className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={() => router.push('/customer/kuro/analytics')}
+                                className="w-12 h-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 transition-all flex items-center justify-center text-white/40 hover:text-white hidden sm:flex"
+                                title="Neural Analytics"
+                            >
+                                <BarChart2 className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => router.push('/customer/kuro/preferences')}
@@ -476,8 +478,8 @@ export default function KuroPage() {
                                     className={`flex gap-4 sm:gap-6 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     {msg.role === 'assistant' && (
-                                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 border border-white/10 flex-shrink-0 flex items-center justify-center mt-1">
-                                            <Bot className="w-6 h-6 text-purple-400" />
+                                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex-shrink-0 flex items-center justify-center mt-1">
+                                            <Bot className="w-6 h-6 text-white shadow-glow" />
                                         </div>
                                     )}
 
@@ -485,8 +487,8 @@ export default function KuroPage() {
                                         <div className={cn(
                                             "px-7 py-5 rounded-[2.5rem] relative transition-all duration-500 text-sm overflow-hidden",
                                             msg.role === 'user'
-                                                ? 'bg-white text-black font-black italic rounded-tr-sm'
-                                                : 'glass-panel border-white/10 text-white/90 font-medium rounded-tl-sm bg-white/[0.03]'
+                                                ? 'bg-white text-black font-black tracking-tight rounded-tr-sm shadow-[0_0_30px_rgba(255,255,255,0.1)]'
+                                                : 'glass-panel border-white/5 text-white/90 font-medium rounded-tl-sm bg-white/[0.02]'
                                         )}>
                                             {/* User Attachment Display */}
                                             {msg.metadata?.attachments && (
@@ -515,13 +517,13 @@ export default function KuroPage() {
 
                         {loading && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-4 sm:gap-6">
-                                <div className="w-11 h-11 rounded-2xl bg-white/5 flex items-center justify-center border border-white/10">
-                                    <Sparkles className="w-5 h-5 text-purple-400 animate-pulse" />
+                                <div className="w-11 h-11 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5">
+                                    <Sparkles className="w-5 h-5 text-white/20 animate-pulse" />
                                 </div>
-                                <div className="glass-panel px-6 py-4 rounded-[1.5rem] rounded-tl-sm border border-white/10 flex gap-2 items-center bg-white/[0.03]">
-                                    <span className="w-1.5 h-1.5 bg-purple-500/60 rounded-full animate-bounce"></span>
-                                    <span className="w-1.5 h-1.5 bg-purple-500/60 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                                    <span className="w-1.5 h-1.5 bg-purple-500/60 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                                <div className="glass-panel px-6 py-4 rounded-[1.5rem] rounded-tl-sm border border-white/5 flex gap-2 items-center bg-white/[0.02]">
+                                    <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce"></span>
+                                    <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                                    <span className="w-1.5 h-1.5 bg-white/40 rounded-full animate-bounce [animation-delay:0.4s]"></span>
                                 </div>
                             </motion.div>
                         )}
@@ -590,7 +592,7 @@ export default function KuroPage() {
                                     placeholder={isListening ? "Listening..." : "TRANSMIT TO KURO..."}
                                     disabled={loading}
                                     className={cn(
-                                        "w-full h-16 sm:h-20 glass-panel border-white/10 rounded-[2rem] pl-8 pr-32 text-sm font-black text-white placeholder-white/10 focus:outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/5 transition-all shadow-2xl tracking-widest uppercase",
+                                        "w-full h-16 sm:h-20 glass-panel border-white/5 rounded-[2rem] px-8 pl-20 sm:pl-24 text-sm font-black text-white placeholder-white/20 focus:outline-none focus:bg-white/[0.08] transition-all shadow-2xl tracking-widest uppercase",
                                         isListening && "border-red-500/50 animate-pulse"
                                     )}
                                 />
@@ -628,14 +630,14 @@ export default function KuroPage() {
                             <Button
                                 onClick={() => handleSendMessage(input)}
                                 disabled={loading || (!input.trim() && !attachment)}
-                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-[2.2rem] bg-gradient-to-br from-purple-500 to-blue-600 text-white hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all active:scale-95 flex items-center justify-center p-0 border-none group"
+                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-[2.2rem] bg-white text-black hover:bg-white/90 hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all active:scale-95 flex items-center justify-center p-0 border-none group"
                             >
                                 {loading ? (
                                     <div className="w-8 h-8 flex items-center justify-center">
                                         <div className="w-5 h-5 border-2 border-white/10 border-t-white rounded-full animate-spin" />
                                     </div>
                                 ) : (
-                                    <Send className="w-7 h-7 sm:w-8 sm:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                    <Send className="w-7 h-7 sm:w-8 sm:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform text-black" />
                                 )}
                             </Button>
                         </div>

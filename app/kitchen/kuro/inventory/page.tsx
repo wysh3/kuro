@@ -20,7 +20,7 @@ export default function InventoryPage() {
 
     useEffect(() => {
         if (!authLoading) {
-            if (!user || ({ ...userProfile } && !userProfile.kitchenStaff)) {
+            if (!user || !userProfile?.kitchenStaff) {
                 router.push('/customer');
             } else {
                 fetchData();
@@ -91,7 +91,7 @@ export default function InventoryPage() {
                             <ArrowLeft className="w-6 h-6 text-white/40" />
                         </button>
                         <div>
-                            <h1 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.4em] leading-none mb-1">Kuro Intelligence</h1>
+                            <h1 className="text-[10px] font-black text-white/50 uppercase tracking-[0.4em] leading-none mb-1">Kuro Intelligence</h1>
                             <p className="text-2xl font-black text-white uppercase tracking-widest">INVENTORY FORECAST</p>
                         </div>
                     </div>
@@ -109,14 +109,14 @@ export default function InventoryPage() {
                             key={rec.itemId}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="glass-panel p-6 rounded-[2rem] border-white/10 bg-white/[0.02] flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
+                            className="glass-panel p-6 rounded-[2rem] border-white/5 bg-white/[0.02] flex flex-col md:flex-row items-start md:items-center justify-between gap-6"
                         >
                             <div className="flex items-start gap-4">
                                 <div className={cn(
                                     "w-12 h-12 rounded-2xl flex items-center justify-center border",
-                                    rec.urgency === 'high' ? "bg-red-500/10 border-red-500/20 text-red-400" :
-                                        rec.urgency === 'medium' ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-400" :
-                                            "bg-green-500/10 border-green-500/20 text-green-400"
+                                    rec.urgency === 'high' ? "bg-red-500/5 border-red-500/20 text-red-500" :
+                                        rec.urgency === 'medium' ? "bg-yellow-500/5 border-yellow-500/20 text-yellow-500" :
+                                            "bg-green-500/5 border-green-500/20 text-green-500"
                                 )}>
                                     <Package className="w-6 h-6" />
                                 </div>
@@ -134,14 +134,14 @@ export default function InventoryPage() {
                                 <div className="h-10 w-[1px] bg-white/10 hidden md:block" />
                                 <div className="flex items-center gap-2">
                                     {rec.urgency === 'high' ? (
-                                        <div className="px-4 py-2 rounded-xl bg-red-500/20 border border-red-500/20 flex items-center gap-2">
-                                            <AlertTriangle className="w-4 h-4 text-red-400" />
-                                            <span className="text-[10px] font-black text-red-400 uppercase tracking-widest">High Priority</span>
+                                        <div className="px-4 py-2 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-2">
+                                            <AlertTriangle className="w-4 h-4 text-red-500" />
+                                            <span className="text-[10px] font-black text-red-500 uppercase tracking-widest">High Priority</span>
                                         </div>
                                     ) : (
-                                        <div className="px-4 py-2 rounded-xl bg-green-500/20 border border-green-500/20 flex items-center gap-2">
-                                            <CheckCircle2 className="w-4 h-4 text-green-400" />
-                                            <span className="text-[10px] font-black text-green-400 uppercase tracking-widest">Stable</span>
+                                        <div className="px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20 flex items-center gap-2">
+                                            <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                            <span className="text-[10px] font-black text-green-500 uppercase tracking-widest">Stable</span>
                                         </div>
                                     )}
                                 </div>

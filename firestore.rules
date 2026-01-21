@@ -43,62 +43,71 @@ service cloud.firestore {
                     || isKitchenStaff()
                     || (resource.data.status in ['kitchen_received', 'preparing', 'ready']);
 
-      // Create: Authenticated, guest, or test user (for Phase 4 testing)
+      // Create: Authenticated, guest, or test user
       allow create: if isAuthenticated()
                        || isGuestOrder()
                        || isTestOrder();
 
-      // Update: Kitchen staff, or owner for cancellation, or anyone for status if it's needed (but usually kitchen only)
-      allow update: if isKitchenStaff() || isOwner(resource.data.userId);
+      // Update: 
+      // 1. Kitchen Staff: Can update anything (status, etc.)
+      // 2. Owner: Can ONLY cancel orders, and ONLY if status is 'pending' or 'kitchen_received'
+      allow update: if isKitchenStaff() || 
+                    (isOwner(resource.data.userId) && 
+                     request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'updatedAt']) &&
+                     request.resource.data.status == 'cancelled' &&
+                     resource.data.status in ['pending', 'kitchen_received']);
     }
 
     // User profiles - owners read/write own, kitchen staff can read
     match /users/{userId} {
       allow read: if isOwner(userId) || isKitchenStaff();
-      allow write: if isOwner(userId); // Covers create and update
+      
+      // Create: Allow if not trying to set kitchenStaff to true
+      allow create: if isOwner(userId) && 
+                    (!request.resource.data.keys().hasAny(['kitchenStaff']) || request.resource.data.kitchenStaff == false);
+      
+      // Update: Allow if not touching kitchenStaff
+      allow update: if isOwner(userId) && 
+                    (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['kitchenStaff']));
 
-      // Kuro AI Sessions - user can read/write their own sessions
+      // Kuro AI Sessions
       match /kuro_sessions/{sessionId} {
         allow read, write: if isOwner(userId);
       }
 
-      // Meal Plans - user can read/write their own meal plans
+      // Meal Plans
       match /meal_plans/{planId} {
         allow read, write: if isOwner(userId);
       }
 
-      // User Preferences - user can read/write their own preferences
+      // User Preferences
       match /preferences/{prefId} {
         allow read, write: if isOwner(userId);
       }
     }
 
-    // Campus status - kitchen staff write, public read
-    // All users (including guests) can update dailyOrderCount when creating orders
-    // and update crowd intelligence fields
+    // Campus status
     match /campus_status/{document=**} {
       allow read: if true;
-      // Kitchen staff can do any write
       allow write: if isKitchenStaff();
-      // All users can update specific fields: 
-      // 1. Order counter (for transactions in createOrder)
-      // 2. Crowd status fields (for updateCrowdStatus)
-      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly([
-        'dailyOrderCount', 
-        'lastOrderReset',
-        'activeOrders',
-        'activeOrderIds',
-        'averagePrepTime',
-        'totalPrepTimeRemaining',
-        'kitchenCapacity',
-        'staffOnline',
-        'crowdLevel',
-        'crowdScore',
-        'estimatedWait',
-        'isManualOverride',
-        'calculationMethod',
-        'lastUpdated'
-      ]);
+      
+      // Allow automated updates from clients only for operational metrics
+      // Restrict configuration fields (capacity, staff, overrides) to staff only
+      // Note: We allow unauthenticated (guest) updates here because checking 'isGuestOrder' 
+      // fails if the update payload doesn't contain userId (which status updates don't)
+      allow update: if (isAuthenticated() || request.auth == null) && 
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                      'dailyOrderCount', 
+                      'lastOrderReset',
+                      'activeOrders',
+                      'activeOrderIds',
+                      'averagePrepTime',
+                      'totalPrepTimeRemaining',
+                      'crowdLevel',
+                      'crowdScore',
+                      'estimatedWait',
+                      'lastUpdated'
+                    ]);
     }
 
     // FCM Tokens - separate collection to support authenticated users

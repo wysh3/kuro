@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Clock, CheckCircle2, LogOut, BarChart3, Zap, Target, Activity } from 'lucide-react'
+import { Clock, CheckCircle2, LogOut, BarChart3, Zap, Target, Activity, Bot } from 'lucide-react'
 import { useKitchenOrders } from '@/hooks/use-kitchen-orders'
 import { Order, CampusStatus } from '@/lib/types'
 import { convertTimestampToISO, subscribeToCampusStatus } from '@/lib/firebase/db'
@@ -145,6 +145,9 @@ export default function KitchenPage() {
 
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
+              <Button onClick={() => router.push('/kitchen/kuro')} variant="ghost" className="h-11 px-5 bg-white/5 hover:bg-white/10 transition-all rounded-2xl text-[9px] font-black tracking-widest sm:flex hidden group">
+                <Bot className="w-4 h-4 mr-2 text-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] transition-all" /> KURO AI
+              </Button>
               <Button onClick={() => router.push('/kitchen/analytics')} variant="ghost" className="h-11 px-5 bg-white/5 hover:bg-white/10 transition-all rounded-2xl text-[9px] font-black tracking-widest sm:flex hidden">
                 <BarChart3 className="w-4 h-4 mr-2" /> ANALYTICS
               </Button>

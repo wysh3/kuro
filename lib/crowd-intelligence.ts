@@ -227,13 +227,9 @@ export async function updateCrowdStatus() {
       activeOrderIds: activeOrders.map(o => o.id),
       averagePrepTime: intelligence.efficiencyMetrics.averagePrepTime,
       totalPrepTimeRemaining: intelligence.stationQueues.reduce((sum, q) => sum + q.totalPrepTime, 0),
-      kitchenCapacity: STATIONS.reduce((sum, s) => sum + s.cooks * s.capacity, 0),
-      staffOnline: intelligence.factors.staffAvailable,
       crowdLevel: intelligence.crowdLevel,
       crowdScore: intelligence.crowdScore,
-      estimatedWait: intelligence.estimatedWait,
-      isManualOverride: false,
-      calculationMethod: 'auto' as const
+      estimatedWait: intelligence.estimatedWait
     });
 
     console.log('✅ Crowd status updated:', {
