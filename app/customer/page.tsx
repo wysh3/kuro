@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef, startTransition } from "react"
+import { toast } from "sonner"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
@@ -205,7 +206,17 @@ export default function CustomerPage() {
             <div className="h-4 w-[1px] bg-white/10 mx-1" />
 
             <Button
-              onClick={() => router.push('/customer/profile')}
+              onClick={() => {
+                if (user) {
+                  router.push('/customer/profile')
+                } else {
+                  toast.error('Login Required', {
+                    description: 'Please sign in to access your profile and order history.',
+                    duration: 3000,
+                  })
+                  setTimeout(() => router.push('/'), 500)
+                }
+              }}
               variant="ghost"
               className="p-1 rounded-xl hover:bg-white/5 transition-all group"
             >

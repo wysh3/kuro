@@ -22,15 +22,6 @@ export default function MealPlannerPage() {
     const { addToCart, cart, setIsDrawerOpen } = useCart();
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        if (!authLoading && !user) {
-            router.push('/');
-        }
-    }, [user, authLoading, router]);
-
-    if (authLoading) return <div className="min-h-screen bg-black" />;
-    if (!user) return null;
-
     const [messages, setMessages] = useState<ChatMessage[]>([
         {
             role: 'assistant',
@@ -57,10 +48,19 @@ export default function MealPlannerPage() {
     ];
 
     useEffect(() => {
+        if (!authLoading && !user) {
+            router.push('/');
+        }
+    }, [user, authLoading, router]);
+
+    useEffect(() => {
         // Randomly select 3 suggestions on mount
         const shuffled = [...ALL_SUGGESTIONS].sort(() => 0.5 - Math.random());
         setSuggestions(shuffled.slice(0, 3));
     }, []);
+
+    if (authLoading) return <div className="min-h-screen bg-black" />;
+    if (!user) return null;
 
     useEffect(() => {
         // Disable browser scroll restoration and force top

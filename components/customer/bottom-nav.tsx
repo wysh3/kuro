@@ -6,11 +6,14 @@ import { Home, Sparkles, ShoppingBag, User } from 'lucide-react'
 import { useRouter, usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useCart } from '@/contexts/cart-context'
+import { useAuth } from '@/hooks/use-auth'
+import { toast } from 'sonner'
 
 export function BottomNav() {
     const router = useRouter()
     const pathname = usePathname()
     const { setIsDrawerOpen, cart } = useCart()
+    const { user } = useAuth()
     const [mounted, setMounted] = useState(false)
 
     useEffect(() => {
@@ -46,6 +49,17 @@ export function BottomNav() {
                             onClick={() => {
                                 if (item.id === 'cart') {
                                     setIsDrawerOpen(true)
+                                } else if ((item.id === 'profile' || item.id === 'ai') && !user) {
+                                    // Show toast and redirect guests to login for protected pages
+                                    const message = item.id === 'profile'
+                                        ? 'Please sign in to access your profile and order history.'
+                                        : 'Please sign in to use the AI Meal Planner.'
+
+                                    toast.error('Login Required', {
+                                        description: message,
+                                        duration: 3000,
+                                    })
+                                    setTimeout(() => router.push('/'), 500)
                                 } else {
                                     router.push(item.path)
                                 }
