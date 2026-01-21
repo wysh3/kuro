@@ -1,6 +1,25 @@
 import { getAdminDB } from './admin'
 import { UserPreferences } from '../ai/types'
 
+function removeUndefined(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return null
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(removeUndefined)
+  }
+  if (typeof obj === 'object') {
+    const result: any = {}
+    for (const key in obj) {
+      if (obj[key] !== undefined) {
+        result[key] = removeUndefined(obj[key])
+      }
+    }
+    return result
+  }
+  return obj
+}
+
 export async function getUserPreferences(userId: string): Promise<UserPreferences | null> {
   try {
     const db = getAdminDB()
@@ -77,8 +96,9 @@ export async function saveKuroMessage(userId: string, sessionId: string, message
       const data = sessionDoc.data()
       if (!data) return
       const messages = data.messages || []
+      const cleanMessage = removeUndefined(message)
       const newMessage = {
-        ...message,
+        ...cleanMessage,
         id: Math.random().toString(36).substr(2, 9),
         timestamp: new Date()
       }
