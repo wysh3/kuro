@@ -184,5 +184,36 @@ export const kuroFunctions = [
             },
             required: ["forecastDays"]
         }
+    },
+    {
+        name: "show_ui_options",
+        description: "Display interactive option buttons to the user. Use this when you want the user to choose from specific options (e.g. 'Yes/No', 'Breakfast/Lunch', specific items).",
+        parameters: {
+            type: "object",
+            properties: {
+                options: {
+                    type: "array",
+                    items: {
+                        type: "object",
+                        properties: {
+                            label: { type: "string", description: "Text to display on button" },
+                            value: { type: "string", description: "Value to send back when clicked" },
+                            variant: {
+                                type: "string",
+                                enum: ["default", "primary", "outline"],
+                                description: "Visual style of the button"
+                            }
+                        },
+                        required: ["label", "value"]
+                    },
+                    description: "List of options to display"
+                },
+                message: {
+                    type: "string",
+                    description: "Optional message to display alongside options"
+                }
+            },
+            required: ["options"]
+        }
     }
 ]

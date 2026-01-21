@@ -80,6 +80,8 @@ export async function executeFunction(
             return await handleForecastDemand(args, userId)
         case 'recommend_inventory':
             return await handleInventoryRecommendations(args, userId)
+        case 'show_ui_options':
+            return { status: 'success', message: 'Options displayed to user' }
         default:
             throw new Error(`Unknown function: ${functionName}`)
     }

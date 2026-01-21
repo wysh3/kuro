@@ -5,6 +5,8 @@ import { KuroMessage, SessionContext, RichContent, QuickAction } from './types'
 
 const client = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '' })
 
+const MAX_TURNS = 5
+
 export async function handleKuroChat(
     userId: string,
     sessionId: string,
@@ -17,10 +19,23 @@ export async function handleKuroChat(
         const systemPrompt = buildSystemPrompt(userId, context)
 
         // Convert history to new SDK format
-        const contents: Content[] = history.map(msg => ({
-            role: msg.role === 'assistant' ? 'model' : 'user',
-            parts: [{ text: msg.content }]
-        }))
+        const contents: Content[] = history.map(msg => {
+            const parts: Part[] = []
+            if (msg.content) {
+                parts.push({ text: msg.content })
+            } else if (msg.metadata?.attachments) {
+                // If no text but has attachment, we usually don't have the attachment data here in history
+                // (unless we store it, but we don't seem to store full base64 in history state for long term)
+                // Best to put a placeholder text
+                parts.push({ text: '[Image Upload]' })
+            } else {
+                parts.push({ text: '...' })
+            }
+            return {
+                role: msg.role === 'assistant' ? 'model' : 'user',
+                parts
+            }
+        })
 
         // Add current message with attachments
         const currentMessageParts: Part[] = [{ text: message }]
@@ -40,46 +55,17 @@ export async function handleKuroChat(
             parts: currentMessageParts
         })
 
-        const result = await client.models.generateContent({
-            model: 'gemini-2.5-flash-lite',
-            contents,
-            config: {
-                systemInstruction: systemPrompt,
-                tools: [{ functionDeclarations: kuroFunctions as any }]
-            }
-        })
+        let turnCount = 0
+        let finalMessage = ''
+        let allActions: any[] = []
+        let lastRichContent: RichContent | null = null
+        let functionCallInProgress = true
+        let uiOptions: QuickAction[] = []
 
-        const response = result
-        const candidate = response.candidates?.[0]
-        const content = candidate?.content
-        const parts = content?.parts || []
+        while (functionCallInProgress && turnCount < MAX_TURNS) {
+            turnCount++
 
-        let finalMessage = response.text || ''
-        let functionCalls = parts.filter(p => p.functionCall).map(p => p.functionCall!)
-        let actions: any[] = []
-        let richContent: RichContent | null = null
-
-        if (functionCalls.length > 0) {
-            const functionResults = await Promise.all(
-                functionCalls.map(async (call) => {
-                    const result = await executeFunction(call.name!, call.args, userId)
-                    return {
-                        functionResponse: {
-                            name: call.name,
-                            response: result
-                        }
-                    }
-                })
-            )
-
-            // Add the model's first turns (with function calls) and the function results to the conversation
-            contents.push(content!)
-            contents.push({
-                role: 'user',
-                parts: functionResults as Part[]
-            })
-
-            const finalResult = await client.models.generateContent({
+            const result = await client.models.generateContent({
                 model: 'gemini-2.5-flash-lite',
                 contents,
                 config: {
@@ -88,23 +74,80 @@ export async function handleKuroChat(
                 }
             })
 
-            finalMessage = finalResult.text || ''
+            const response = result
+            const candidate = response.candidates?.[0]
+            const content = candidate?.content
+            const parts = content?.parts || []
 
-            actions = functionCalls.map((call, index) => ({
-                type: call.name!,
-                data: call.args,
-                result: functionResults[index].functionResponse.response
-            }))
-            richContent = generateRichContent(functionCalls, functionResults.map(r => r.functionResponse.response))
+            // If there's text, keep track of it as potentially the final message
+            // (The model might output text AND a function call, or just text)
+            if (response.text) {
+                finalMessage = response.text
+            }
+
+            const functionCalls = parts.filter(p => p.functionCall).map(p => p.functionCall!)
+
+            if (functionCalls.length > 0) {
+                // We have function calls to execute
+                contents.push(content!) // Add model's turn to history
+
+                const functionResults = await Promise.all(
+                    functionCalls.map(async (call) => {
+                        // Special handling for show_ui_options to extract buttons
+                        if (call.name === 'show_ui_options') {
+                            const args = call.args as any
+                            if (args.options && Array.isArray(args.options)) {
+                                uiOptions = args.options
+                            }
+                            // We still return a "success" to the model so it knows it happened
+                        }
+
+                        const result = await executeFunction(call.name!, call.args, userId)
+
+                        // Collect action for frontend
+                        allActions.push({
+                            type: call.name!,
+                            data: call.args,
+                            result: result
+                        })
+
+                        // Check if this result should update the rich content
+                        const rich = generateRichContent([call], [result])
+                        if (rich) {
+                            lastRichContent = rich
+                        }
+
+                        return {
+                            functionResponse: {
+                                name: call.name,
+                                response: result
+                            }
+                        }
+                    })
+                )
+
+                // Add function responses to history for the next turn
+                contents.push({
+                    role: 'user',
+                    parts: functionResults as Part[]
+                })
+
+                // Loop continues to let model see results and decide what to do next
+            } else {
+                // No function calls, model is done
+                functionCallInProgress = false
+            }
         }
 
-        const buttons = extractQuickActions(finalMessage)
+        // Extract regex-based buttons as fallback or addition
+        const regexButtons = extractQuickActions(finalMessage)
+        const finalButtons = [...uiOptions, ...regexButtons].slice(0, 6)
 
         return {
             message: finalMessage,
-            actions,
-            richContent,
-            buttons: buttons.length > 0 ? buttons : undefined
+            actions: allActions,
+            richContent: lastRichContent,
+            buttons: finalButtons.length > 0 ? finalButtons : undefined
         }
     } catch (error: any) {
         console.error('Error in handleKuroChat:', error)
@@ -131,6 +174,7 @@ Your personality is ${style.toUpperCase()}.
 - Analyze eating patterns and make recommendations
 - Answer questions about menu items, ingredients, and dietary options
 - Help with kitchen operations (for staff users)
+- Display interactive options to the user using 'show_ui_options' (Use this when asking the user to make a choice!)
 
 **User Context:**
 - User ID: ${userId}
@@ -152,7 +196,8 @@ ${style === 'detailed' ? '- Provide thorough explanations, nutritional science, 
 1. ALWAYS use function calls for actions (ordering, meal planning, etc.)
 2. NEVER make up menu items or prices
 3. ALWAYS consider user's dietary restrictions and allergies
-4. If user asks about kitchen operations and they're not staff, politely explain it's for staff only
+4. If you need the user to choose between options (e.g. "Which coke?"), use the 'show_ui_options' tool instead of just listing them in text.
+5. If user asks about kitchen operations and they're not staff, politely explain it's for staff only
 
 **Current Date:** ${new Date().toISOString().split('T')[0]}
 **Current Time:** ${new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
@@ -193,6 +238,7 @@ function generateRichContent(functionCalls: any[], results: any[]): RichContent 
 
 function extractQuickActions(text: string): QuickAction[] {
     const buttons: QuickAction[] = []
+    if (!text) return buttons
 
     const patterns = [
         { regex: /choose from ['"](.*?)['"]/gi, variant: 'primary' as const },
@@ -203,16 +249,18 @@ function extractQuickActions(text: string): QuickAction[] {
     ]
 
     for (const pattern of patterns) {
-        const match = text.match(pattern.regex)
-        if (match) {
-            const options = match[1].split(/,|and/).map((s: string) => s.trim().replace(/['"`]/g, ''))
-            for (const option of options) {
-                if (option && !buttons.find(b => b.value.toLowerCase() === option.toLowerCase())) {
-                    buttons.push({
-                        label: option.charAt(0).toUpperCase() + option.slice(1),
-                        value: option,
-                        variant: pattern.variant
-                    })
+        const matches = text.matchAll(pattern.regex)
+        for (const match of matches) {
+            if (match && match[1]) {
+                const options = match[1].split(/,|and/).map((s: string) => s.trim().replace(/['"`]/g, ''))
+                for (const option of options) {
+                    if (option && !buttons.find(b => b.value.toLowerCase() === option.toLowerCase())) {
+                        buttons.push({
+                            label: option.charAt(0).toUpperCase() + option.slice(1),
+                            value: option,
+                            variant: pattern.variant
+                        })
+                    }
                 }
             }
         }
