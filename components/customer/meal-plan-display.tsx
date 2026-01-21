@@ -30,10 +30,10 @@ export default function MealPlanDisplay({ plan, onAddToCart }: MealPlanDisplayPr
                     accent="text-blue-400"
                 />
                 <MetricCard
-                    icon={<TrendingUp className="w-4 h-4 text-purple-400" />}
+                    icon={<TrendingUp className="w-4 h-4 text-blue-400" />}
                     label="CARBS"
                     value={`${nutrition.carbs || 0}g`}
-                    accent="text-purple-400"
+                    accent="text-blue-400"
                 />
                 <MetricCard
                     icon={<TrendingUp className="w-4 h-4 text-green-400" />}

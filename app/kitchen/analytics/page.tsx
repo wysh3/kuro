@@ -193,8 +193,8 @@ export default function KitchenAnalyticsPage() {
                         value={`${Math.round(avgPrepTime)}m`}
                         icon={<Clock className="w-4 h-4" />}
                         subValue="Service Speed"
-                        accent="text-purple-400"
-                        glowColor="bg-purple-400/10"
+                        accent="text-blue-400"
+                        glowColor="bg-blue-400/10"
                     />
                     <MetricCard
                         title="Kitchen Load"

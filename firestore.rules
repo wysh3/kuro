@@ -13,6 +13,7 @@ service cloud.firestore {
 
     function isKitchenStaff() {
       return isAuthenticated() &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.kitchenStaff == true;
     }
 
@@ -72,17 +73,17 @@ service cloud.firestore {
 
       // Kuro AI Sessions
       match /kuro_sessions/{sessionId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if request.auth.uid == userId;
       }
 
       // Meal Plans
       match /meal_plans/{planId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if request.auth.uid == userId;
       }
 
       // User Preferences
       match /preferences/{prefId} {
-        allow read, write: if isOwner(userId);
+        allow read, write: if request.auth.uid == userId;
       }
     }
 
@@ -92,9 +93,6 @@ service cloud.firestore {
       allow write: if isKitchenStaff();
       
       // Allow automated updates from clients only for operational metrics
-      // Restrict configuration fields (capacity, staff, overrides) to staff only
-      // Note: We allow unauthenticated (guest) updates here because checking 'isGuestOrder' 
-      // fails if the update payload doesn't contain userId (which status updates don't)
       allow update: if (isAuthenticated() || request.auth == null) && 
                     request.resource.data.diff(resource.data).affectedKeys().hasOnly([
                       'dailyOrderCount', 
