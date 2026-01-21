@@ -415,7 +415,7 @@ export default function KuroPage() {
                             <div className="flex items-center gap-4">
                                 <div className="w-12 h-12 rounded-2xl bg-white/5 p-[1px] border border-white/10">
                                     <div className="w-full h-full bg-black/50 rounded-2xl flex items-center justify-center">
-                                        <Bot className="w-6 h-6 text-white shadow-glow" />
+                                        <Sparkles className="w-6 h-6 text-white shadow-glow" />
                                     </div>
                                 </div>
                                 <div className="hidden sm:block">
@@ -479,7 +479,7 @@ export default function KuroPage() {
                                 >
                                     {msg.role === 'assistant' && (
                                         <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex-shrink-0 flex items-center justify-center mt-1">
-                                            <Bot className="w-6 h-6 text-white shadow-glow" />
+                                            <Sparkles className="w-6 h-6 text-white shadow-glow" />
                                         </div>
                                     )}
 

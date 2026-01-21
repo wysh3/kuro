@@ -206,10 +206,11 @@ export default function CustomerPage() {
                 }
               }}
               variant="ghost"
-              className="h-10 px-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 hover:from-purple-500/20 hover:to-blue-500/20 transition-all rounded-xl text-[9px] font-black tracking-widest flex items-center gap-2 border border-purple-500/20"
+              size="icon"
+              className="relative text-white/60 hover:text-white group bg-white/5 rounded-xl border border-white/5 transition-all hover:bg-white/10"
+              title="Kuro AI Agent"
             >
-              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-              <span className="hidden sm:inline">KURO AI</span>
+              <Sparkles className="w-4.5 h-4.5 group-hover:animate-pulse" />
             </Button>
 
             {userProfile?.kitchenStaff && (

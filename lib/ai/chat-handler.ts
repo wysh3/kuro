@@ -17,7 +17,7 @@ export async function handleKuroChat(
         const systemPrompt = buildSystemPrompt(userId, context)
 
         const model = genAI.getGenerativeModel({
-            model: 'gemini-2.0-flash-exp',
+            model: 'gemini-flash-lite-latest',
             systemInstruction: systemPrompt,
             tools: [{ functionDeclarations: kuroFunctions as any }]
         })
