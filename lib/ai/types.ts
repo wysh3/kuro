@@ -11,7 +11,14 @@ export interface KuroMessage {
         attachments?: any[]
         richContent?: RichContent
         actions?: any[]
+        buttons?: QuickAction[]
     }
+}
+
+export interface QuickAction {
+    label: string
+    value: string
+    variant?: 'default' | 'primary' | 'outline'
 }
 
 export interface RichContent {

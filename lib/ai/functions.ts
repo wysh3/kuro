@@ -1,7 +1,29 @@
 export const kuroFunctions = [
     {
+        name: "search_menu_items",
+        description: "Search menu items by name or keyword to find matching items and their IDs",
+        parameters: {
+            type: "object",
+            properties: {
+                query: {
+                    type: "string",
+                    description: "Search query (item name, ingredient, category)"
+                },
+                category: {
+                    type: "string",
+                    description: "Filter by category (optional)"
+                },
+                dietaryRestriction: {
+                    type: "string",
+                    description: "Filter by dietary restriction (optional)"
+                }
+            },
+            required: ["query"]
+        }
+    },
+    {
         name: "place_order",
-        description: "Place a food order for the user with specified items and delivery time",
+        description: "Place a food order for user with specified items and delivery time. IMPORTANT: First use search_menu_items to find item IDs before placing order.",
         parameters: {
             type: "object",
             properties: {
@@ -39,7 +61,7 @@ export const kuroFunctions = [
                 duration: {
                     type: "string",
                     enum: ["daily", "weekly", "monthly"],
-                    description: "Duration of the meal plan"
+                    description: "Duration of meal plan"
                 },
                 startDate: {
                     type: "string",

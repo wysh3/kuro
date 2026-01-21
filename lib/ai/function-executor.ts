@@ -2,6 +2,60 @@ import admin from 'firebase-admin'
 import { getMenuItems, getOrdersByUserId } from '../firebase/db-admin'
 import { MenuItem } from '../types'
 
+async function handleSearchMenuItems(args: any) {
+    try {
+        const allItems = await getMenuItems()
+        const query = args.query?.toLowerCase() || ''
+
+        let filtered = allItems.filter((item) => {
+            const matchesName = item.name.toLowerCase().includes(query)
+            const matchesCategory = item.category.toLowerCase().includes(query)
+            const matchesDescription = item.description?.toLowerCase().includes(query) || false
+            const matchesIngredients = item.ingredients?.some((ing: string) => ing.toLowerCase().includes(query)) || false
+
+            return matchesName || matchesCategory || matchesDescription || matchesIngredients
+        })
+
+        if (args.category) {
+            filtered = filtered.filter((item) => item.category.toLowerCase() === args.category.toLowerCase())
+        }
+
+        if (args.dietaryRestriction) {
+            const restriction = args.dietaryRestriction.toLowerCase()
+            filtered = filtered.filter((item) => {
+                if (restriction === 'vegan') return item.dietaryTags?.includes('vegan')
+                if (restriction === 'vegetarian') return item.dietaryTags?.includes('vegetarian')
+                if (restriction === 'gluten-free') return item.dietaryTags?.includes('gluten-free')
+                if (restriction === 'dairy-free') return item.dietaryTags?.includes('dairy-free')
+                return true
+            })
+        }
+
+        const results = filtered.map((item) => ({
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            price: item.price,
+            description: item.description || '',
+            available: item.available,
+            dietaryTags: item.dietaryTags || [],
+            allergens: item.allergens || []
+        }))
+
+        return {
+            count: results.length,
+            items: results.slice(0, 20),
+            message: results.length === 0
+                ? `No items found matching "${query}"`
+                : `Found ${results.length} item(s) matching "${query}"`
+        }
+    } catch (error) {
+        console.error('Error in handleSearchMenuItems:', error)
+        return { error: 'Failed to search menu items' }
+    }
+}
+
+
 export async function executeFunction(
     functionName: string,
     args: any,
@@ -10,6 +64,8 @@ export async function executeFunction(
     console.log(`Executing AI function: ${functionName}`, args)
 
     switch (functionName) {
+        case 'search_menu_items':
+            return await handleSearchMenuItems(args)
         case 'place_order':
             return await handlePlaceOrder(args, userId)
         case 'create_meal_plan':

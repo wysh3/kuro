@@ -1,7 +1,7 @@
 import { GoogleGenAI, Content, Part } from '@google/genai'
 import { kuroFunctions } from './functions'
 import { executeFunction } from './function-executor'
-import { KuroMessage, SessionContext, RichContent } from './types'
+import { KuroMessage, SessionContext, RichContent, QuickAction } from './types'
 
 const client = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '' })
 
@@ -98,10 +98,13 @@ export async function handleKuroChat(
             richContent = generateRichContent(functionCalls, functionResults.map(r => r.functionResponse.response))
         }
 
+        const buttons = extractQuickActions(finalMessage)
+
         return {
             message: finalMessage,
             actions,
-            richContent
+            richContent,
+            buttons: buttons.length > 0 ? buttons : undefined
         }
     } catch (error: any) {
         console.error('Error in handleKuroChat:', error)
@@ -186,4 +189,34 @@ function generateRichContent(functionCalls: any[], results: any[]): RichContent 
         default:
             return null
     }
+}
+
+function extractQuickActions(text: string): QuickAction[] {
+    const buttons: QuickAction[] = []
+
+    const patterns = [
+        { regex: /choose from ['"](.*?)['"]/gi, variant: 'primary' as const },
+        { regex: /choose from ['`](.*?)['`]/gi, variant: 'primary' as const },
+        { regex: /options: (.*?)(?:\.|,|;|$)/gi, variant: 'default' as const },
+        { regex: /(week|month|quarter|year)/gi, variant: 'outline' as const },
+        { regex: /(nutrition|spending|variety|health)/gi, variant: 'outline' as const }
+    ]
+
+    for (const pattern of patterns) {
+        const match = text.match(pattern.regex)
+        if (match) {
+            const options = match[1].split(/,|and/).map((s: string) => s.trim().replace(/['"`]/g, ''))
+            for (const option of options) {
+                if (option && !buttons.find(b => b.value.toLowerCase() === option.toLowerCase())) {
+                    buttons.push({
+                        label: option.charAt(0).toUpperCase() + option.slice(1),
+                        value: option,
+                        variant: pattern.variant
+                    })
+                }
+            }
+        }
+    }
+
+    return buttons.slice(0, 6)
 }
