@@ -23,7 +23,7 @@ export function BottomNav() {
     const items = [
         { id: 'home', icon: Home, path: '/customer' },
         { id: 'profile', icon: User, path: '/customer/profile' },
-        { id: 'ai', icon: Sparkles, path: '/customer/meal-planner' },
+        { id: 'ai', icon: Sparkles, path: '/customer/kuro' },
         { id: 'cart', icon: ShoppingBag, path: 'cart' },
     ]
 
@@ -53,7 +53,7 @@ export function BottomNav() {
                                     // Show toast and redirect guests to login for protected pages
                                     const message = item.id === 'profile'
                                         ? 'Please sign in to access your profile and order history.'
-                                        : 'Please sign in to use the AI Meal Planner.'
+                                        : 'Please sign in to use the Kuro AI Assistant.'
 
                                     toast.error('Login Required', {
                                         description: message,

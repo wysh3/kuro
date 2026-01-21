@@ -10,6 +10,21 @@ export interface MenuItem {
     image?: string
     description?: string
     createdAt: Timestamp
+    nutrition?: {
+        calories: number
+        protein: number
+        carbs: number
+        fats: number
+        fiber: number
+        sugar: number
+        sodium: number
+        vitamins?: Record<string, number>
+        minerals?: Record<string, number>
+    }
+    allergens?: string[]
+    dietaryTags?: string[]
+    ingredients?: string[]
+    preparationTime?: number
 }
 
 export interface Order {
