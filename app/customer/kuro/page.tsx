@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Send, ArrowLeft, Plus, ShoppingCart, Check, History, Settings, Bot, Utensils, BarChart2, Mic, Image as ImageIcon, X, Paperclip } from 'lucide-react';
+import { Sparkles, Send, ArrowLeft, Plus, ShoppingCart, Check, History, Settings, Utensils, BarChart2, Mic, Image as ImageIcon, X, Paperclip } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/cart-context';
 import { Button } from '@/components/ui/button';
@@ -286,8 +286,8 @@ export default function KuroPage() {
                     <div className="space-y-4 mt-4 w-full">
                         <div className="p-6 rounded-[2rem] glass-panel border-white/10 bg-white/[0.02]">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center">
-                                    <Utensils className="w-4 h-4 text-purple-400" />
+                                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                                    <Utensils className="w-4 h-4 text-blue-400" />
                                 </div>
                                 <p className="text-xs font-black text-white/40 uppercase tracking-[0.2em]">Order Preview</p>
                             </div>
@@ -354,11 +354,11 @@ export default function KuroPage() {
                             {content.data.recommendations.map((item: any) => (
                                 <motion.div
                                     key={item.id}
-                                    className="flex-shrink-0 w-64 p-5 rounded-[2rem] glass-panel border-white/10 bg-white/[0.02] snap-center hover:border-purple-500/30 transition-all border"
+                                    className="flex-shrink-0 w-64 p-5 rounded-[2rem] glass-panel border-white/10 bg-white/[0.02] snap-center hover:border-blue-500/30 transition-all border"
                                 >
                                     <div className="flex justify-between items-start mb-2">
                                         <h3 className="font-bold text-white text-sm line-clamp-1">{item.name}</h3>
-                                        <p className="text-purple-400 font-mono text-xs font-bold">₹{item.price}</p>
+                                        <p className="text-blue-400 font-mono text-xs font-bold">₹{item.price}</p>
                                     </div>
                                     <p className="text-[10px] text-white/40 line-clamp-2 mb-4 h-8">{item.description || 'Recommended based on your preferences.'}</p>
                                     <Button
@@ -382,7 +382,7 @@ export default function KuroPage() {
     if (!user) return null;
 
     return (
-        <div className="min-h-screen bg-black flex flex-col selection:bg-purple-500/30 relative overflow-hidden">
+        <div className="min-h-screen bg-black flex flex-col selection:bg-blue-500/30 relative overflow-hidden">
 
 
             <div className="max-w-4xl w-full mx-auto flex-1 flex flex-col p-4 md:p-8 relative z-10 h-screen">
@@ -451,7 +451,7 @@ export default function KuroPage() {
                                     <motion.div
                                         initial={{ scale: 0 }}
                                         animate={{ scale: 1 }}
-                                        className="absolute -top-1 -right-1 w-6 h-6 bg-purple-500 text-white text-[10px] font-black rounded-xl border-2 border-black flex items-center justify-center shadow-lg"
+                                        className="absolute -top-1 -right-1 w-6 h-6 bg-white text-black text-[10px] font-black rounded-xl border-2 border-black flex items-center justify-center shadow-lg"
                                     >
                                         {cart.reduce((acc, item) => acc + item.quantity, 0)}
                                     </motion.div>
@@ -565,7 +565,7 @@ export default function KuroPage() {
                                         <button
                                             key={idx}
                                             onClick={() => handleSendMessage(suggestion)}
-                                            className="whitespace-nowrap px-5 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-[10px] font-black text-white/60 uppercase tracking-widest transition-all hover:border-purple-500/30 snap-start"
+                                            className="whitespace-nowrap px-5 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-[10px] font-black text-white/60 uppercase tracking-widest transition-all hover:border-blue-500/30 snap-start"
                                         >
                                             {suggestion}
                                         </button>
@@ -660,7 +660,7 @@ export default function KuroPage() {
                         >
                             <div className="flex justify-between items-center mb-10">
                                 <div>
-                                    <p className="text-[10px] font-black text-purple-400 uppercase tracking-widest leading-none mb-1">Index</p>
+                                    <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest leading-none mb-1">Index</p>
                                     <h2 className="text-xl font-black text-white uppercase tracking-widest">SESSIONS</h2>
                                 </div>
                                 <button
@@ -679,7 +679,7 @@ export default function KuroPage() {
                                         className={cn(
                                             "w-full p-4 rounded-2xl border transition-all text-left group",
                                             sessionId === s.id
-                                                ? "bg-purple-500/10 border-purple-500/40"
+                                                ? "bg-blue-500/10 border-blue-500/40"
                                                 : "bg-white/[0.02] border-white/5 hover:border-white/20"
                                         )}
                                     >

@@ -1,9 +1,9 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import { GoogleGenAI, Content, Part } from '@google/genai'
 import { kuroFunctions } from './functions'
 import { executeFunction } from './function-executor'
 import { KuroMessage, SessionContext, RichContent } from './types'
 
-const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '')
+const client = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || process.env.GEMINI_API_KEY || '' })
 
 export async function handleKuroChat(
     userId: string,
@@ -16,44 +16,53 @@ export async function handleKuroChat(
     try {
         const systemPrompt = buildSystemPrompt(userId, context)
 
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash-lite',
-            systemInstruction: systemPrompt,
-            tools: [{ functionDeclarations: kuroFunctions as any }]
-        })
+        // Convert history to new SDK format
+        const contents: Content[] = history.map(msg => ({
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: [{ text: msg.content }]
+        }))
 
-        const chat = model.startChat({
-            history: history.map(msg => ({
-                role: msg.role === 'assistant' ? 'model' : 'user',
-                parts: [{ text: msg.content }]
-            }))
-        })
-
-        let messageParts: any[] = [{ text: message }]
+        // Add current message with attachments
+        const currentMessageParts: Part[] = [{ text: message }]
         if (attachments && attachments.length > 0) {
-            messageParts = [
-                { text: message },
-                ...attachments.map(att => ({
+            attachments.forEach(att => {
+                currentMessageParts.push({
                     inlineData: {
                         data: att.data,
                         mimeType: att.mimeType
                     }
-                }))
-            ]
+                })
+            })
         }
 
-        let result = await chat.sendMessage(messageParts)
-        let response = result.response
-        let functionCalls = response.functionCalls()
+        contents.push({
+            role: 'user',
+            parts: currentMessageParts
+        })
 
-        let finalMessage = response.text()
+        const result = await client.models.generateContent({
+            model: 'gemini-2.5-flash-lite',
+            contents,
+            config: {
+                systemInstruction: systemPrompt,
+                tools: [{ functionDeclarations: kuroFunctions as any }]
+            }
+        })
+
+        const response = result
+        const candidate = response.candidates?.[0]
+        const content = candidate?.content
+        const parts = content?.parts || []
+
+        let finalMessage = response.text || ''
+        let functionCalls = parts.filter(p => p.functionCall).map(p => p.functionCall!)
         let actions: any[] = []
         let richContent: RichContent | null = null
 
-        if (functionCalls && functionCalls.length > 0) {
+        if (functionCalls.length > 0) {
             const functionResults = await Promise.all(
                 functionCalls.map(async (call) => {
-                    const result = await executeFunction(call.name, call.args, userId)
+                    const result = await executeFunction(call.name!, call.args, userId)
                     return {
                         functionResponse: {
                             name: call.name,
@@ -63,10 +72,26 @@ export async function handleKuroChat(
                 })
             )
 
-            const finalResult = await chat.sendMessage(functionResults as any)
-            finalMessage = finalResult.response.text()
+            // Add the model's first turns (with function calls) and the function results to the conversation
+            contents.push(content!)
+            contents.push({
+                role: 'user',
+                parts: functionResults as Part[]
+            })
+
+            const finalResult = await client.models.generateContent({
+                model: 'gemini-2.5-flash-lite',
+                contents,
+                config: {
+                    systemInstruction: systemPrompt,
+                    tools: [{ functionDeclarations: kuroFunctions as any }]
+                }
+            })
+
+            finalMessage = finalResult.text || ''
+
             actions = functionCalls.map((call, index) => ({
-                type: call.name,
+                type: call.name!,
                 data: call.args,
                 result: functionResults[index].functionResponse.response
             }))
@@ -81,7 +106,7 @@ export async function handleKuroChat(
     } catch (error: any) {
         console.error('Error in handleKuroChat:', error)
         return {
-            message: "I'm sorry, I encountered an error. Please try again later.",
+            message: "I'm sorry, I encountered a neural link failure. Please try again later.",
             actions: [],
             richContent: null,
             error: error.message

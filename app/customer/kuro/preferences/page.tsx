@@ -113,7 +113,7 @@ export default function PreferencesPage() {
                             <ArrowLeft className="w-6 h-6 text-white/40" />
                         </button>
                         <div>
-                            <h1 className="text-[10px] font-black text-purple-400 uppercase tracking-[0.4em] leading-none mb-1">Configuration</h1>
+                            <h1 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.4em] leading-none mb-1">Configuration</h1>
                             <p className="text-2xl font-black text-white uppercase tracking-widest">KURO PREFERENCES</p>
                         </div>
                     </div>
@@ -130,7 +130,7 @@ export default function PreferencesPage() {
                     {/* Dietary Profile */}
                     <section className="space-y-6">
                         <div className="flex items-center gap-3">
-                            <Shield className="w-5 h-5 text-purple-400" />
+                            <Shield className="w-5 h-5 text-blue-400" />
                             <h2 className="text-sm font-black uppercase tracking-widest">Dietary Profile</h2>
                         </div>
                         <div className="glass-panel p-8 rounded-[2.5rem] border-white/10 bg-white/[0.02] space-y-6">
@@ -144,7 +144,7 @@ export default function PreferencesPage() {
                                             className={cn(
                                                 "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border",
                                                 prefs.dietary.restrictions.includes(res)
-                                                    ? "bg-purple-500 border-purple-400 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                                                    ? "bg-blue-500 border-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]"
                                                     : "bg-white/5 border-white/5 text-white/40 hover:border-white/20"
                                             )}
                                         >
@@ -260,7 +260,7 @@ export default function PreferencesPage() {
                                             }))}
                                             className={cn(
                                                 "w-10 h-5 rounded-full relative transition-all",
-                                                value ? "bg-purple-500" : "bg-white/10"
+                                                value ? "bg-blue-500" : "bg-white/10"
                                             )}
                                         >
                                             <div className={cn(

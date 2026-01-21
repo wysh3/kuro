@@ -89,7 +89,7 @@ export default function AnalyticsPage() {
                     {[
                         { label: 'Total Spending', value: `₹${totalSpending}`, icon: DollarSign, color: 'text-green-400' },
                         { label: 'Orders Placed', value: orders.length, icon: ShoppingCart, color: 'text-blue-400' },
-                        { label: 'Avg Order Value', value: `₹${avgOrderValue}`, icon: TrendingUp, color: 'text-purple-400' },
+                        { label: 'Avg Order Value', value: `₹${avgOrderValue}`, icon: TrendingUp, color: 'text-blue-400' },
                         { label: 'Active Streak', value: '7 Days', icon: Activity, color: 'text-red-400' },
                     ].map((stat, i) => (
                         <div key={i} className="glass-panel p-6 rounded-[2rem] border-white/10 bg-white/[0.02]">
@@ -148,7 +148,7 @@ export default function AnalyticsPage() {
                     {/* Most Ordered Items */}
                     <div className="space-y-6">
                         <div className="flex items-center gap-3">
-                            <PieChart className="w-5 h-5 text-purple-400" />
+                            <PieChart className="w-5 h-5 text-blue-400" />
                             <h2 className="text-sm font-black uppercase tracking-widest text-white/60">Frequency Distribution</h2>
                         </div>
                         <div className="glass-panel p-8 rounded-[3rem] border-white/10 bg-white/[0.01] h-[400px] flex flex-col items-center justify-center">

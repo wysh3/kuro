@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Send, ArrowLeft, Plus, History, Bot, BarChart2, Package, TrendingUp } from 'lucide-react';
+import { Sparkles, Send, ArrowLeft, Plus, History, BarChart2, Package, TrendingUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
