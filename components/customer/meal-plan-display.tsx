@@ -59,13 +59,21 @@ export default function MealPlanDisplay({ plan, onAddToCart }: MealPlanDisplayPr
                             </div>
                             <div>
                                 <p className="text-[8px] font-black text-white/20 uppercase tracking-widest">{meal.mealType || meal.day}</p>
-                                <p className="text-sm font-bold text-white uppercase">{Array.isArray(meal.items) ? meal.items.join(', ') : meal.item || meal.breakfast?.item || 'Meal Item'}</p>
+                                <p className="text-sm font-bold text-white uppercase">
+                                    {Array.isArray(meal.items)
+                                        ? meal.items.map((i: any) => typeof i === 'string' ? i : i.name).join(', ')
+                                        : typeof meal.item === 'string' ? meal.item : meal.item?.name || 'Meal Item'}
+                                </p>
                             </div>
                         </div>
                         <div className="text-right">
                             <p className="text-[10px] font-black text-white/40">{meal.calories || 0} kcal</p>
                             <button
-                                onClick={() => onAddToCart?.(Array.isArray(meal.items) ? meal.items[0] : (meal.item || meal.breakfast?.item))}
+                                onClick={() => {
+                                    const firstItem = Array.isArray(meal.items) ? meal.items[0] : (meal.item || meal.breakfast?.item);
+                                    const itemName = typeof firstItem === 'string' ? firstItem : firstItem?.name;
+                                    onAddToCart?.(itemName);
+                                }}
                                 className="text-[9px] font-black text-blue-400 uppercase mt-1 hover:text-white transition-colors"
                             >
                                 Add item

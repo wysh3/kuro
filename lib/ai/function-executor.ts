@@ -1,6 +1,6 @@
-import { createOrder, getMenuItem, getMenuItems, getOrdersByUserId } from '../firebase/db'
 import { Timestamp } from 'firebase/firestore'
-import { MenuItem, Order } from '../types'
+import { getMenuItems, getOrdersByUserId } from '../firebase/db'
+import { MenuItem } from '../types'
 
 export async function executeFunction(
     functionName: string,
@@ -12,25 +12,18 @@ export async function executeFunction(
     switch (functionName) {
         case 'place_order':
             return await handlePlaceOrder(args, userId)
-
         case 'create_meal_plan':
             return await handleCreateMealPlan(args, userId)
-
         case 'get_nutrition_info':
             return await handleGetNutritionInfo(args)
-
         case 'analyze_eating_patterns':
             return await handleAnalyzePatterns(args, userId)
-
         case 'get_recommendations':
             return await handleGetRecommendations(args, userId)
-
         case 'forecast_kitchen_demand':
-            return await handleForecastDemand(args)
-
+            return await handleForecastDemand(args, userId)
         case 'recommend_inventory':
-            return await handleInventoryRecommendations(args)
-
+            return await handleInventoryRecommendations(args, userId)
         default:
             throw new Error(`Unknown function: ${functionName}`)
     }
@@ -38,105 +31,153 @@ export async function executeFunction(
 
 async function handlePlaceOrder(args: any, userId: string) {
     try {
-        const items = await Promise.all(
-            args.items.map(async (item: any) => {
-                const menuItem = await getMenuItem(item.itemId)
-                if (!menuItem) throw new Error(`Item ${item.itemId} not found`)
-                return {
-                    id: menuItem.id,
-                    name: menuItem.name,
-                    price: menuItem.price,
-                    quantity: item.quantity,
-                    customization: item.customization
-                }
+        const allItems = await getMenuItems()
+        const validatedItems = []
+
+        for (const orderItem of args.items) {
+            const menuItem = allItems.find(
+                (m) => m.id === orderItem.itemId || m.name.toLowerCase() === orderItem.itemId.toLowerCase()
+            )
+
+            if (!menuItem) {
+                continue
+            }
+
+            if (!menuItem.available) {
+                continue
+            }
+
+            validatedItems.push({
+                id: menuItem.id,
+                name: menuItem.name,
+                price: menuItem.price,
+                quantity: orderItem.quantity,
+                customization: orderItem.customization || '',
+                nutrition: menuItem.nutrition
             })
+        }
+
+        if (validatedItems.length === 0) {
+            return {
+                error: 'None of the requested items are available',
+                requiresConfirmation: false
+            }
+        }
+
+        const total = validatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+        const totalNutrition = validatedItems.reduce(
+            (acc, item) => {
+                const nutrition = item.nutrition
+                if (nutrition) {
+                    return {
+                        calories: acc.calories + nutrition.calories * item.quantity,
+                        protein: acc.protein + nutrition.protein * item.quantity,
+                        carbs: acc.carbs + nutrition.carbs * item.quantity,
+                        fats: acc.fats + nutrition.fats * item.quantity
+                    }
+                }
+                return acc
+            },
+            { calories: 0, protein: 0, carbs: 0, fats: 0 }
         )
 
-        const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-
-        // Return preview for confirmation
         return {
             preview: true,
-            items,
+            items: validatedItems,
             total,
+            nutrition: totalNutrition,
             scheduledTime: args.scheduledTime || 'ASAP',
-            specialInstructions: args.specialInstructions,
+            specialInstructions: args.specialInstructions || '',
             requiresConfirmation: true,
-            message: `I've prepared an order for ${items.length} items totaling ₹${total}. Would you like me to place it?`
+            confirmationMessage: `I've prepared an order for ${validatedItems.length} item(s) totaling ₹${total}. Would you like to add these to your cart?`
         }
     } catch (error) {
         console.error('Error in handlePlaceOrder:', error)
-        return { error: 'Failed to prepare order' }
+        return { error: 'Failed to process order' }
     }
 }
 
 async function handleCreateMealPlan(args: any, userId: string) {
     try {
         const allItems = await getMenuItems()
-        const dietaryRestrictions = args.dietaryRestrictions || []
+        const { getUserPreferences, saveMealPlan } = await import('../firebase/ai-db')
+        const prefs = await getUserPreferences(userId)
 
-        // Filter items based on dietary restrictions
-        const allowedItems = allItems.filter(item => {
+        const dietaryRestrictions = args.dietaryRestrictions || prefs?.dietary.restrictions || []
+        const mealTypes = args.mealTypes || ['breakfast', 'lunch', 'dinner']
+
+        const filteredItems = allItems.filter((item) => {
             if (!item.available) return false
-            if (dietaryRestrictions.length === 0) return true
-            return dietaryRestrictions.every((res: string) =>
-                item.dietaryTags?.includes(res.toLowerCase()) ||
-                !item.allergens?.includes(res.toLowerCase())
-            )
+
+            if (dietaryRestrictions.includes('vegan') && !item.dietaryTags?.includes('vegan')) return false
+            if (dietaryRestrictions.includes('vegetarian') && !item.dietaryTags?.includes('vegetarian'))
+                return false
+            if (dietaryRestrictions.includes('gluten-free') && !item.dietaryTags?.includes('gluten-free'))
+                return false
+
+            if (prefs?.dietary.allergies && item.allergens) {
+                const hasAllergen = item.allergens.some((allergen) =>
+                    prefs.dietary.allergies.includes(allergen.toLowerCase())
+                )
+                if (hasAllergen) return false
+            }
+
+            return true
         })
 
-        const mealTypes = args.mealTypes || ['breakfast', 'lunch', 'dinner']
-        const planMeals = []
-        let totalCalories = 0
-        let totalProtein = 0
-        let totalCarbs = 0
-        let totalFats = 0
-
-        // Simple heuristic: pick one item for each meal type
-        for (const type of mealTypes) {
-            const typeItems = allowedItems.filter(item => {
-                if (type === 'breakfast') return item.category.toLowerCase().includes('breakfast')
-                if (type === 'snack') return item.category.toLowerCase().includes('snack') || item.category.toLowerCase().includes('beverages')
-                return !item.category.toLowerCase().includes('breakfast') && !item.category.toLowerCase().includes('beverages')
-            })
-
-            const selected = typeItems.length > 0
-                ? typeItems[Math.floor(Math.random() * typeItems.length)]
-                : allowedItems[Math.floor(Math.random() * allowedItems.length)]
-
-            if (selected) {
-                planMeals.push({
-                    mealType: type,
-                    items: [selected.name],
-                    calories: selected.nutrition?.calories || 0,
-                    protein: selected.nutrition?.protein || 0,
-                    carbs: selected.nutrition?.carbs || 0,
-                    fats: selected.nutrition?.fats || 0
-                })
-                totalCalories += selected.nutrition?.calories || 0
-                totalProtein += selected.nutrition?.protein || 0
-                totalCarbs += selected.nutrition?.carbs || 0
-                totalFats += selected.nutrition?.fats || 0
+        if (filteredItems.length === 0) {
+            return {
+                error: 'No suitable items found matching your dietary restrictions',
+                requiresConfirmation: false
             }
         }
 
+        const planMeals = []
         const durationDays = args.duration === 'weekly' ? 7 : args.duration === 'monthly' ? 30 : 1
         const startDate = new Date(args.startDate || new Date())
         const endDate = new Date(startDate)
         endDate.setDate(startDate.getDate() + durationDays - 1)
 
-        const { saveMealPlan, getUserPreferences } = await import('../firebase/ai-db')
-        const prefs = await getUserPreferences(userId)
-        const targetCalories = args.calorieTarget || prefs?.health.targetWeight ? 1800 : 2200
+        const { saveMealPlan: savePlan, getUserPreferences: getPrefs } = await import('../firebase/ai-db')
+        const userPrefs = await getPrefs(userId)
+        const targetCalories = args.calorieTarget || (userPrefs?.health.targetWeight ? 1800 : 2200)
 
-        const planId = await saveMealPlan(userId, {
+        for (let day = 0; day < durationDays; day++) {
+            for (const mealType of mealTypes) {
+                const suitableItems = filteredItems.filter((item) => {
+                    const name = item.name.toLowerCase()
+                    if (mealType === 'breakfast') return name.includes('breakfast') || name.includes('oatmeal')
+                    if (mealType === 'lunch') return name.includes('rice') || name.includes('burger')
+                    if (mealType === 'dinner') return name.includes('chicken') || name.includes('meal')
+                    return true
+                })
+
+                const selectedItem = suitableItems[Math.floor(Math.random() * suitableItems.length)] || filteredItems[0]
+
+                planMeals.push({
+                    mealType,
+                    items: [selectedItem],
+                    calories: selectedItem.nutrition?.calories || 400,
+                    protein: selectedItem.nutrition?.protein || 20,
+                    carbs: selectedItem.nutrition?.carbs || 50,
+                    fats: selectedItem.nutrition?.fats || 15
+                })
+            }
+        }
+
+        const totalCalories = planMeals.reduce((sum, m) => sum + m.calories, 0)
+        const totalProtein = planMeals.reduce((sum, m) => sum + m.protein, 0)
+        const totalCarbs = planMeals.reduce((sum, m) => sum + m.carbs, 0)
+        const totalFats = planMeals.reduce((sum, m) => sum + m.fats, 0)
+
+        const planId = await savePlan(userId, {
             userId,
             type: args.duration,
             startDate: Timestamp.fromDate(startDate),
             endDate: Timestamp.fromDate(endDate),
             meals: planMeals.map((m, idx) => ({
                 id: Math.random().toString(36).substr(2, 9),
-                date: Timestamp.fromDate(new Date(startDate.getTime() + (Math.floor(idx / 3) * 24 * 60 * 60 * 1000))),
+                date: Timestamp.fromDate(new Date(startDate.getTime() + Math.floor(idx / 3) * 24 * 60 * 60 * 1000)),
                 mealType: m.mealType as any,
                 items: m.items,
                 totalNutrition: {
@@ -165,40 +206,40 @@ async function handleCreateMealPlan(args: any, userId: string) {
         })
 
         return {
-            success: true,
             planId,
-            plan: {
-                type: args.duration,
-                startDate: args.startDate || new Date().toISOString(),
-                meals: planMeals,
-                nutritionSummary: {
-                    calories: totalCalories,
-                    protein: totalProtein,
-                    carbs: totalCarbs,
-                    fats: totalFats
-                }
+            plan: planMeals,
+            summary: {
+                avgCaloriesPerDay: Math.round(totalCalories / durationDays),
+                proteinPerDay: Math.round(totalProtein / durationDays),
+                calories: Math.round(totalCalories / durationDays),
+                protein: Math.round(totalProtein / durationDays),
+                carbs: Math.round(totalCarbs / durationDays),
+                fats: Math.round(totalFats / durationDays)
             },
-            message: `I've created and saved a ${args.duration} meal plan for you.`
+            message: `I've created a ${args.duration} meal plan with ${planMeals.length} meals averaging ${Math.round(totalCalories / durationDays)} calories per day!`
         }
     } catch (error) {
         console.error('Error in handleCreateMealPlan:', error)
-        return { error: 'Failed to generate meal plan' }
+        return { error: 'Failed to create meal plan' }
     }
 }
 
 async function handleGetNutritionInfo(args: any) {
     try {
-        const info = await Promise.all(
-            args.itemIds.map(async (id: string) => {
-                const item = await getMenuItem(id)
-                return {
-                    id,
-                    name: item?.name,
-                    nutrition: item?.nutrition,
-                    allergens: args.includeAllergens ? item?.allergens : undefined
-                }
-            })
-        )
+        const allItems = await getMenuItems()
+        const info = args.itemIds.map((id: string) => {
+            const item = allItems.find((m) => m.id === id || m.name.toLowerCase() === id.toLowerCase())
+            if (!item) return null
+            return {
+                id: item.id,
+                name: item.name,
+                nutrition: item.nutrition,
+                allergens: item.allergens || [],
+                dietaryTags: item.dietaryTags || [],
+                ingredients: item.ingredients || []
+            }
+        }).filter(Boolean)
+
         return { info }
     } catch (error) {
         return { error: 'Failed to fetch nutrition info' }
@@ -219,11 +260,9 @@ async function handleAnalyzePatterns(args: any, userId: string) {
 
         const totalSpending = orders.reduce((sum, o) => sum + (o.total || 0), 0)
         const itemFrequency: Record<string, number> = {}
-        let totalProt = 0
-        let orderCountWithNutr = 0
 
-        orders.forEach(order => {
-            order.items?.forEach(item => {
+        orders.forEach((order) => {
+            order.items?.forEach((item) => {
                 const name = item.name
                 itemFrequency[name] = (itemFrequency[name] || 0) + (item.quantity || 1)
             })
@@ -248,37 +287,190 @@ async function handleAnalyzePatterns(args: any, userId: string) {
 }
 
 async function handleGetRecommendations(args: any, userId: string) {
-    const allItems = await getMenuItems()
-    // Basic filtering for mock
-    const recommended = allItems
-        .filter(item => item.available)
-        .slice(0, args.maxItems || 3)
-        .map(item => ({
-            id: item.id,
-            name: item.name,
-            price: item.price,
-            description: item.description,
-            matchScore: 0.95
-        }))
+    try {
+        const { getUserPreferences } = await import('../firebase/ai-db')
+        const prefs = await getUserPreferences(userId)
+        const allItems = await getMenuItems()
+        const orders = await getOrdersByUserId(userId)
 
-    return { recommendations: recommended }
-}
+        const itemFrequency: Record<string, number> = {}
+        orders.forEach((order) => {
+            order.items?.forEach((item) => {
+                itemFrequency[item.id] = (itemFrequency[item.id] || 0) + (item.quantity || 1)
+            })
+        })
 
-async function handleForecastDemand(args: any) {
-    return {
-        date: args.date,
-        predictedOrders: 45,
-        confidence: 0.88,
-        peakHours: ['12:30', '13:30', '19:00'],
-        message: "High demand expected during lunch rush."
+        let filtered = allItems.filter((item) => {
+            if (!item.available) return false
+
+            if (prefs?.dietary.restrictions) {
+                if (prefs.dietary.restrictions.includes('vegan') && !item.dietaryTags?.includes('vegan')) return false
+                if (prefs.dietary.restrictions.includes('vegetarian') && !item.dietaryTags?.includes('vegetarian'))
+                    return false
+                if (prefs.dietary.restrictions.includes('gluten-free') && !item.dietaryTags?.includes('gluten-free'))
+                    return false
+            }
+
+            if (prefs?.dietary.allergies && item.allergens) {
+                const hasAllergen = item.allergens.some((allergen) =>
+                    prefs.dietary.allergies.includes(allergen.toLowerCase())
+                )
+                if (hasAllergen) return false
+            }
+
+            return true
+        })
+
+        const scored = filtered.map((item) => {
+            let score = 0
+
+            if (itemFrequency[item.id]) score += itemFrequency[item.id] * 10
+
+            if (args.context) {
+                const context = args.context.toLowerCase()
+                const name = item.name.toLowerCase()
+
+                if (context === 'breakfast' && (name.includes('breakfast') || name.includes('oatmeal'))) score += 20
+                if (context === 'lunch' && (name.includes('rice') || name.includes('burger'))) score += 20
+                if (context === 'healthy' && item.nutrition && item.nutrition.calories < 500) score += 15
+                if (context === 'post-workout' && item.nutrition && item.nutrition.protein > 20) score += 25
+            }
+
+            if (prefs?.health.goals) {
+                if (prefs.health.goals.includes('weight-loss') && item.nutrition && item.nutrition.calories < 400)
+                    score += 10
+                if (prefs.health.goals.includes('muscle-gain') && item.nutrition && item.nutrition.protein > 25)
+                    score += 15
+            }
+
+            return { ...item, matchScore: score / 100 }
+        })
+
+        const recommended = scored
+            .sort((a, b) => b.matchScore - a.matchScore)
+            .slice(0, args.maxItems || 5)
+            .map((item) => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                description: item.description,
+                nutrition: item.nutrition,
+                matchScore: Math.min(item.matchScore, 0.99)
+            }))
+
+        return { recommendations: recommended }
+    } catch (error) {
+        console.error('Error in handleGetRecommendations:', error)
+        const allItems = await getMenuItems()
+        const fallback = allItems
+            .filter((item) => item.available)
+            .slice(0, args.maxItems || 3)
+            .map((item) => ({
+                id: item.id,
+                name: item.name,
+                price: item.price,
+                description: item.description,
+                matchScore: 0.5
+            }))
+        return { recommendations: fallback }
     }
 }
 
-async function handleInventoryRecommendations(args: any) {
-    return {
-        recommendations: [
-            { itemName: 'Chicken Patties', currentStock: 12, recommendedReorder: 50, urgency: 'high' },
-            { itemName: 'Burger Buns', currentStock: 8, recommendedReorder: 100, urgency: 'high' }
-        ]
+async function handleForecastDemand(args: any, userId: string) {
+    try {
+        const { getAllOrders } = await import('../firebase/db')
+        // For forecast, we analyze GLOBAL trends, not just user trends
+        const orders = await getAllOrders()
+        const allOrders = orders.filter((o) => o.createdAt)
+
+        if (allOrders.length < 5) {
+            return {
+                date: args.date,
+                predictedOrders: 0,
+                confidence: 0.3,
+                peakHours: [],
+                message: 'Not enough historical data for accurate forecasting. Need at least 5 total system orders.'
+            }
+        }
+
+        const hourCounts: Record<number, number> = {}
+        allOrders.forEach((order) => {
+            const hour = new Date(order.createdAt.toDate()).getHours()
+            hourCounts[hour] = (hourCounts[hour] || 0) + 1
+        })
+
+        const peakHours = Object.entries(hourCounts)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 3)
+            .map(([hour]) => `${hour}:00`)
+
+        // Simple moving average for basic forecasting
+        const uniqueDays = new Set(allOrders.map(o => new Date(o.createdAt.toDate()).toDateString())).size || 1
+        const avgOrdersPerDay = allOrders.length / uniqueDays
+        const predictedOrders = Math.round(avgOrdersPerDay * (args.multiplier || 1.1)) // 10% growth assumption
+
+        return {
+            date: args.date,
+            predictedOrders,
+            confidence: uniqueDays > 7 ? 0.8 : 0.5,
+            peakHours,
+            message: `Based on ${allOrders.length} total orders across ${uniqueDays} days, we expect ~${predictedOrders} orders. Peak usage is usually around ${peakHours.join(', ')}.`
+        }
+    } catch (error) {
+        console.error('Error in handleForecastDemand:', error)
+        return {
+            date: args.date,
+            predictedOrders: 0,
+            confidence: 0,
+            peakHours: [],
+            message: 'Unable to forecast demand at this time.'
+        }
+    }
+}
+
+async function handleInventoryRecommendations(args: any, userId: string) {
+    try {
+        const allItems = await getMenuItems()
+        const { getAllOrders } = await import('../firebase/db')
+        const orders = await getAllOrders()
+
+        const itemDemand: Record<string, number> = {}
+        orders.forEach((order) => {
+            order.items?.forEach((item) => {
+                itemDemand[item.id] = (itemDemand[item.id] || 0) + (item.quantity || 1)
+            })
+        })
+
+        const recommendations = Object.entries(itemDemand)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, args.forecastDays || 10)
+            .map(([itemId, demand]) => {
+                const item = allItems.find((m) => m.id === itemId)
+                // Assuming "demand" is total historical. 
+                // We need daily rate.
+                const uniqueDays = new Set(orders.map(o => new Date(o.createdAt.toDate()).toDateString())).size || 1
+                const avgDailyDemand = demand / uniqueDays
+                const recommendedStock = Math.ceil(avgDailyDemand * (args.forecastDays || 3))
+
+                return {
+                    itemId,
+                    itemName: item?.name || 'Unknown',
+                    currentStock: 0, // We don't track real stock yet in DB, assum 0 for 'needs refill'
+                    recommendedReorder: recommendedStock,
+                    urgency: recommendedStock > 50 ? 'high' : recommendedStock > 20 ? 'medium' : 'low',
+                    reasoning: `High velocity item: ${demand} sold total (${avgDailyDemand.toFixed(1)}/day).`
+                }
+            })
+
+        return {
+            recommendations,
+            message: `Generated ${recommendations.length} inventory recommendations based on global demand velocity.`
+        }
+    } catch (error) {
+        console.error('Error in handleInventoryRecommendations:', error)
+        return {
+            recommendations: [],
+            message: 'Unable to generate inventory recommendations at this time.'
+        }
     }
 }

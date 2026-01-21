@@ -193,6 +193,25 @@ export default function CustomerPage() {
               </AnimatePresence>
             </Button>
 
+            <Button
+              onClick={() => {
+                if (user) {
+                  router.push('/customer/kuro')
+                } else {
+                  toast.error('Login Required', {
+                    description: 'Please sign in to use the Kuro AI Assistant.',
+                    duration: 3000,
+                  })
+                  setTimeout(() => router.push('/'), 500)
+                }
+              }}
+              variant="ghost"
+              className="h-10 px-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 hover:from-purple-500/20 hover:to-blue-500/20 transition-all rounded-xl text-[9px] font-black tracking-widest flex items-center gap-2 border border-purple-500/20"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+              <span className="hidden sm:inline">KURO AI</span>
+            </Button>
+
             {userProfile?.kitchenStaff && (
               <Button
                 onClick={() => router.push('/kitchen')}
@@ -276,10 +295,11 @@ export default function CustomerPage() {
                     <motion.button
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
-                      onClick={() => router.push('/customer/meal-planner')}
-                      className="group relative hidden sm:flex items-center justify-center px-4 py-2 sm:px-8 sm:py-3.5 bg-white text-black rounded-full shadow-premium transition-all w-fit"
+                      onClick={() => router.push('/customer/kuro')}
+                      className="group relative hidden sm:flex items-center justify-center px-4 py-2 sm:px-8 sm:py-3.5 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full shadow-premium transition-all w-fit"
                     >
-                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] relative z-10">AI PLANNER</span>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] relative z-10">KURO AI</span>
                     </motion.button>
                   </div>
                 </div>

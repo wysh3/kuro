@@ -187,7 +187,7 @@ export default function AnalyticsPage() {
                     </div>
                 </div>
 
-                {/* AI Insight Footer */}
+                {/* Dynamic AI Insight Footer */}
                 <div className="glass-panel p-8 rounded-[2.5rem] border border-blue-500/20 bg-blue-500/5 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 blur-[100px] rounded-full" />
                     <div className="relative z-10 flex flex-col md:flex-row gap-6 items-center">
@@ -197,9 +197,15 @@ export default function AnalyticsPage() {
                         <div className="flex-1 text-center md:text-left">
                             <h3 className="text-sm font-black uppercase tracking-widest text-white mb-2">Adaptive Insight</h3>
                             <p className="text-white/60 text-sm leading-relaxed">
-                                You've optimized your spending this week, reducing per-meal cost by 12%.
-                                Your current protein frequency is 80%, alignment with your "Muscle Gain" goal is
-                                <span className="text-blue-400 font-black ml-1">OPTIMAL</span>.
+                                {orders.length > 0 ? (
+                                    <>
+                                        Your spending peaked at <span className="text-white font-bold">₹{Math.max(...orders.map(o => o.total || 0))}</span> for a single order.
+                                        Based on your {orders.length} orders, your preference for <span className="text-blue-400 font-black">{topItems[0]?.name || 'balanced meals'}</span> is clear.
+                                        Adherence to your active nutritional profile is <span className="text-blue-400 font-black">OPTIMAL</span>.
+                                    </>
+                                ) : (
+                                    "Place your first order to generate personalized nutritional insights and spending analytics."
+                                )}
                             </p>
                         </div>
                     </div>

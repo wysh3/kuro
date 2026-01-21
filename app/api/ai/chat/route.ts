@@ -6,7 +6,7 @@ import { getOrdersByUserId } from '@/lib/firebase/db'
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json()
-        const { userId, sessionId, message, history = [] } = body
+        const { userId, sessionId, message, history = [], attachments } = body
 
         if (!userId || !message) {
             return NextResponse.json(
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
         const { createKuroSession, saveKuroMessage } = await import('@/lib/firebase/ai-db')
 
         // Process chat
-        const result = await handleKuroChat(userId, sessionId, message, history, context)
+        const result = await handleKuroChat(userId, sessionId, message, history, context, attachments)
 
         // Handle session and message persistence
         let effectiveSessionId = sessionId;

@@ -2,8 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Send, ArrowLeft, Plus, ShoppingCart, Check, History, Settings, User, Bot, Utensils, BarChart2 } from 'lucide-react';
-import Image from 'next/image';
+import { Sparkles, Send, ArrowLeft, Plus, ShoppingCart, Check, History, Settings, Bot, Utensils, BarChart2, Mic, Image as ImageIcon, X, Paperclip } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/contexts/cart-context';
 import { Button } from '@/components/ui/button';
@@ -14,11 +13,20 @@ import { useAuth } from '@/hooks/use-auth';
 import { KuroMessage, RichContent } from '@/lib/ai/types';
 import MealPlanDisplay from '@/components/customer/meal-plan-display';
 
+// Speech Recognition Types
+declare global {
+    interface Window {
+        webkitSpeechRecognition: any;
+        SpeechRecognition: any;
+    }
+}
+
 export default function KuroPage() {
     const router = useRouter();
     const { user, loading: authLoading } = useAuth();
     const { addToCart, cart, setIsDrawerOpen } = useCart();
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [sessions, setSessions] = useState<any[]>([]);
@@ -35,6 +43,10 @@ export default function KuroPage() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Multi-modal states
+    const [isListening, setIsListening] = useState(false);
+    const [attachment, setAttachment] = useState<{ data: string; mimeType: string; preview: string } | null>(null);
 
     const ALL_SUGGESTIONS = [
         "Plan my protein-heavy meals for the week",
@@ -117,18 +129,83 @@ export default function KuroPage() {
         scrollToBottom();
     }, [messages, loading]);
 
+    // Voice Input Handler
+    const toggleListening = () => {
+        if (isListening) {
+            setIsListening(false);
+            return;
+        }
+
+        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Speech) {
+            toast.error("Voice input not supported in this browser.");
+            return;
+        }
+
+        const recognition = new Speech();
+        recognition.lang = 'en-US';
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => setIsListening(true);
+        recognition.onend = () => setIsListening(false);
+        recognition.onerror = (event: any) => {
+            console.error(event.error);
+            setIsListening(false);
+            toast.error("Voice recognition error.");
+        };
+
+        recognition.onresult = (event: any) => {
+            const transcript = event.results[0][0].transcript;
+            setInput(prev => prev + (prev ? ' ' : '') + transcript);
+        };
+
+        recognition.start();
+    };
+
+    // Image Input Handler
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Image too large. Max 5MB.");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const result = reader.result as string;
+            // Extract base64 content
+            const base64Data = result.split(',')[1];
+            setAttachment({
+                data: base64Data,
+                mimeType: file.type,
+                preview: result
+            });
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleSendMessage = async (text: string) => {
-        if (!text.trim() || loading || !user) return;
+        if ((!text.trim() && !attachment) || loading || !user) return;
+
+        const currentAttachment = attachment;
+        const currentInput = text;
 
         const userMessage: KuroMessage = {
             id: Date.now().toString(),
             role: 'user',
-            content: text,
-            timestamp: { seconds: Date.now() / 1000, nanoseconds: 0 } as any
+            content: currentInput,
+            timestamp: { seconds: Date.now() / 1000, nanoseconds: 0 } as any,
+            metadata: currentAttachment ? {
+                attachments: [{ type: 'image', url: currentAttachment.preview }]
+            } : undefined
         };
 
         setMessages(prev => [...prev, userMessage]);
         setInput('');
+        setAttachment(null);
         setLoading(true);
 
         try {
@@ -138,8 +215,9 @@ export default function KuroPage() {
                 body: JSON.stringify({
                     userId: user.uid,
                     sessionId: sessionId,
-                    message: text,
-                    history: messages.map(m => ({ role: m.role, content: m.content }))
+                    message: currentInput || (currentAttachment ? "Analyze this image" : ""),
+                    history: messages.map(m => ({ role: m.role, content: m.content })),
+                    attachments: currentAttachment ? [{ data: currentAttachment.data, mimeType: currentAttachment.mimeType }] : []
                 })
             });
 
@@ -182,7 +260,6 @@ export default function KuroPage() {
         if (action.type === 'place_order') {
             const items = action.result.items;
             items.forEach((item: any) => {
-                // Handle quantity by calling addToCart multiple times
                 for (let i = 0; i < (item.quantity || 1); i++) {
                     addToCart({
                         id: item.id,
@@ -313,7 +390,7 @@ export default function KuroPage() {
             </div>
 
             <div className="max-w-4xl w-full mx-auto flex-1 flex flex-col p-4 md:p-8 relative z-10 h-screen">
-                {/* Tactical HUD Header */}
+                {/* Header */}
                 <header className={cn(
                     "fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-700 w-[calc(100%-2rem)] max-w-4xl",
                     isScrolled ? "top-2" : "top-4"
@@ -387,7 +464,7 @@ export default function KuroPage() {
                 </header>
 
                 {/* Chat Container */}
-                <div className="flex-1 overflow-y-auto pt-28 pb-32 px-2 custom-scrollbar">
+                <div className="flex-1 overflow-y-auto pt-28 pb-40 px-2 custom-scrollbar">
                     <div className="space-y-12 max-w-3xl mx-auto">
                         <AnimatePresence mode="popLayout">
                             {messages.map((msg, i) => (
@@ -404,14 +481,20 @@ export default function KuroPage() {
                                         </div>
                                     )}
 
-                                    <div className="max-w-[85%] flex flex-col gap-2">
+                                    <div className="max-w-[85%] flex flex-col gap-2 scale-100 origin-bottom-left">
                                         <div className={cn(
-                                            "px-7 py-5 rounded-[2.5rem] relative transition-all duration-500 text-sm",
+                                            "px-7 py-5 rounded-[2.5rem] relative transition-all duration-500 text-sm overflow-hidden",
                                             msg.role === 'user'
                                                 ? 'bg-white text-black font-black italic rounded-tr-sm'
                                                 : 'glass-panel border-white/10 text-white/90 font-medium rounded-tl-sm bg-white/[0.03]'
                                         )}>
-                                            <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                                            {/* User Attachment Display */}
+                                            {msg.metadata?.attachments && (
+                                                <div className="mb-3 rounded-xl overflow-hidden shadow-lg border border-black/10">
+                                                    <img src={msg.metadata.attachments[0].url} alt="Uploaded" className="max-h-60 w-full object-cover" />
+                                                </div>
+                                            )}
+                                            <p className="leading-relaxed whitespace-pre-wrap">{msg.content || (msg.metadata?.attachments ? 'Sent an image' : '')}</p>
                                         </div>
 
                                         {/* Render Assistant Rich Content */}
@@ -420,6 +503,7 @@ export default function KuroPage() {
                                                 initial={{ opacity: 0, scale: 0.95 }}
                                                 animate={{ opacity: 1, scale: 1 }}
                                                 transition={{ delay: 0.2 }}
+                                                className="w-full"
                                             >
                                                 {renderRichContent(msg.metadata.richContent)}
                                             </motion.div>
@@ -448,9 +532,31 @@ export default function KuroPage() {
                 {/* Input Area */}
                 <div className="fixed bottom-0 left-0 right-0 p-4 md:p-8 bg-black/60 backdrop-blur-md z-40 border-t border-white/5">
                     <div className="max-w-4xl mx-auto space-y-4">
+                        {/* Selected Attachment Preview */}
+                        <AnimatePresence>
+                            {attachment && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10, height: 0 }}
+                                    animate={{ opacity: 1, y: 0, height: 'auto' }}
+                                    exit={{ opacity: 0, y: 10, height: 0 }}
+                                    className="relative inline-block"
+                                >
+                                    <div className="relative rounded-2xl overflow-hidden border border-white/10 w-24 h-24 group">
+                                        <img src={attachment.preview} alt="Preview" className="w-full h-full object-cover" />
+                                        <button
+                                            onClick={() => setAttachment(null)}
+                                            className="absolute top-1 right-1 bg-black/50 hover:bg-red-500 rounded-full p-1 transition-colors"
+                                        >
+                                            <X className="w-3 h-3 text-white" />
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+
                         {/* Quick Suggestions */}
                         <AnimatePresence>
-                            {messages.length === 1 && !input.trim() && (
+                            {messages.length === 1 && !input.trim() && !attachment && (
                                 <motion.div
                                     initial={{ opacity: 0, y: 10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -471,7 +577,7 @@ export default function KuroPage() {
                         </AnimatePresence>
 
                         <div className="flex gap-4">
-                            <div className="flex-1 relative group">
+                            <div className="flex-1 relative group bg-black/20 rounded-[2rem]"> {/* Wrapper for inputs */}
                                 <input
                                     type="text"
                                     value={input}
@@ -481,17 +587,47 @@ export default function KuroPage() {
                                             handleSendMessage(input);
                                         }
                                     }}
-                                    placeholder="TRANSMIT TO KURO..."
+                                    placeholder={isListening ? "Listening..." : "TRANSMIT TO KURO..."}
                                     disabled={loading}
-                                    className="w-full h-16 sm:h-20 glass-panel border-white/10 rounded-[2rem] px-8 text-sm font-black text-white placeholder-white/10 focus:outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/5 transition-all shadow-2xl tracking-widest uppercase"
+                                    className={cn(
+                                        "w-full h-16 sm:h-20 glass-panel border-white/10 rounded-[2rem] pl-8 pr-32 text-sm font-black text-white placeholder-white/10 focus:outline-none focus:border-purple-500/50 focus:ring-4 focus:ring-purple-500/5 transition-all shadow-2xl tracking-widest uppercase",
+                                        isListening && "border-red-500/50 animate-pulse"
+                                    )}
                                 />
-                                <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 opacity-20 group-focus-within:opacity-100 transition-opacity hidden sm:flex">
-                                    <span className="text-[10px] font-black text-white tracking-[0.2em]">ENTER TO SEND</span>
+
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    className="hidden"
+                                    ref={fileInputRef}
+                                    onChange={handleFileSelect}
+                                />
+
+                                {/* Input Action Buttons */}
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                                    <button
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="w-10 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center text-white/40 hover:text-white transition-all"
+                                        title="Upload Image"
+                                    >
+                                        <ImageIcon className="w-5 h-5" />
+                                    </button>
+                                    <button
+                                        onClick={toggleListening}
+                                        className={cn(
+                                            "w-10 h-10 rounded-xl hover:bg-white/10 flex items-center justify-center transition-all",
+                                            isListening ? "text-red-400 bg-red-400/10" : "text-white/40 hover:text-white"
+                                        )}
+                                        title="Voice Input"
+                                    >
+                                        <Mic className={cn("w-5 h-5", isListening && "animate-bounce")} />
+                                    </button>
                                 </div>
                             </div>
+
                             <Button
                                 onClick={() => handleSendMessage(input)}
-                                disabled={loading || !input.trim()}
+                                disabled={loading || (!input.trim() && !attachment)}
                                 className="w-16 h-16 sm:w-20 sm:h-20 rounded-[2.2rem] bg-gradient-to-br from-purple-500 to-blue-600 text-white hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] transition-all active:scale-95 flex items-center justify-center p-0 border-none group"
                             >
                                 {loading ? (

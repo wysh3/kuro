@@ -10,7 +10,8 @@ export async function handleKuroChat(
     sessionId: string,
     message: string,
     history: KuroMessage[],
-    context: SessionContext
+    context: SessionContext,
+    attachments?: Array<{ data: string; mimeType: string }>
 ) {
     try {
         const systemPrompt = buildSystemPrompt(userId, context)
@@ -28,7 +29,20 @@ export async function handleKuroChat(
             }))
         })
 
-        let result = await chat.sendMessage(message)
+        let messageParts: any[] = [{ text: message }]
+        if (attachments && attachments.length > 0) {
+            messageParts = [
+                { text: message },
+                ...attachments.map(att => ({
+                    inlineData: {
+                        data: att.data,
+                        mimeType: att.mimeType
+                    }
+                }))
+            ]
+        }
+
+        let result = await chat.sendMessage(messageParts)
         let response = result.response
         let functionCalls = response.functionCalls()
 
