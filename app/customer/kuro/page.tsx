@@ -383,11 +383,7 @@ export default function KuroPage() {
 
     return (
         <div className="min-h-screen bg-black flex flex-col selection:bg-purple-500/30 relative overflow-hidden">
-            {/* Ambient Background Glows - Deep Obsidian Theme */}
-            <div className="fixed top-0 left-0 w-full h-full pointer-events-none z-0">
-                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/5 blur-[120px] rounded-full opacity-50" />
-                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/5 blur-[120px] rounded-full opacity-50" />
-            </div>
+
 
             <div className="max-w-4xl w-full mx-auto flex-1 flex flex-col p-4 md:p-8 relative z-10 h-screen">
                 {/* Header */}
