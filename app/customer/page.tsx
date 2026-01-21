@@ -297,7 +297,7 @@ export default function CustomerPage() {
                       whileHover={{ scale: 1.02, y: -2 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => router.push('/customer/kuro')}
-                      className="group relative hidden sm:flex items-center justify-center px-4 py-2 sm:px-8 sm:py-3.5 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded-full shadow-premium transition-all w-fit"
+                      className="group relative hidden sm:flex items-center justify-center px-4 py-2 sm:px-8 sm:py-3.5 bg-white/5 border border-white/10 hover:bg-white/10 text-white rounded-full shadow-premium transition-all w-fit backdrop-blur-md"
                     >
                       <Sparkles className="w-4 h-4 mr-2" />
                       <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.3em] relative z-10">KURO AI</span>
