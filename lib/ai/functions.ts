@@ -197,7 +197,7 @@ export const kuroFunctions = [
                         type: "object",
                         properties: {
                             label: { type: "string", description: "Text to display on button" },
-                            value: { type: "string", description: "Value to send back when clicked" },
+                            value: { type: "string", description: "Value to send back. MUST be a valid Item ID if referring to a menu item (found via search), otherwise a simple string." },
                             variant: {
                                 type: "string",
                                 enum: ["default", "primary", "outline"],

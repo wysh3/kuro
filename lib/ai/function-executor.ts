@@ -2,10 +2,24 @@ import admin from 'firebase-admin'
 import { getMenuItems, getOrdersByUserId } from '../firebase/db-admin'
 import { MenuItem } from '../types'
 
+// Helper to get value from args regardless of snake_case or camelCase
+const norm = (args: any, ...keys: string[]) => {
+    for (const key of keys) {
+        if (args[key] !== undefined) return args[key]
+        // Convert camel to snake
+        const snake = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`)
+        if (args[snake] !== undefined) return args[snake]
+        // Convert snake to camel (in case we start with camel)
+        const camel = key.replace(/(_\w)/g, m => m[1].toUpperCase())
+        if (args[camel] !== undefined) return args[camel]
+    }
+    return undefined
+}
+
 async function handleSearchMenuItems(args: any) {
     try {
         const allItems = await getMenuItems()
-        const query = args.query?.toLowerCase() || ''
+        const query = norm(args, 'query')?.toLowerCase() || ''
 
         let filtered = allItems.filter((item) => {
             const matchesName = item.name.toLowerCase().includes(query)
@@ -16,12 +30,14 @@ async function handleSearchMenuItems(args: any) {
             return matchesName || matchesCategory || matchesDescription || matchesIngredients
         })
 
-        if (args.category) {
-            filtered = filtered.filter((item) => item.category.toLowerCase() === args.category.toLowerCase())
+        const category = norm(args, 'category')
+        if (category) {
+            filtered = filtered.filter((item) => item.category.toLowerCase() === category.toLowerCase())
         }
 
-        if (args.dietaryRestriction) {
-            const restriction = args.dietaryRestriction.toLowerCase()
+        const dietaryRestriction = norm(args, 'dietaryRestriction')
+        if (dietaryRestriction) {
+            const restriction = dietaryRestriction.toLowerCase()
             filtered = filtered.filter((item) => {
                 if (restriction === 'vegan') return item.dietaryTags?.includes('vegan')
                 if (restriction === 'vegetarian') return item.dietaryTags?.includes('vegetarian')
@@ -92,9 +108,22 @@ async function handlePlaceOrder(args: any, userId: string) {
         const allItems = await getMenuItems()
         const validatedItems = []
 
-        for (const orderItem of args.items) {
+        // Normalize top-level args (Nvidia models often use snake_case)
+        const items = norm(args, 'items') || []
+        const scheduledTime = norm(args, 'scheduledTime', 'deliveryTime') || 'ASAP'
+        const specialInstructions = norm(args, 'specialInstructions') || ''
+
+        for (const orderItem of items) {
+            // Support both itemId and item_id
+            const idToQuery = norm(orderItem, 'itemId')
+
+            if (!idToQuery) {
+                console.warn('Order item missing ID:', orderItem)
+                continue
+            }
+
             const menuItem = allItems.find(
-                (m) => m.id === orderItem.itemId || m.name.toLowerCase() === orderItem.itemId.toLowerCase()
+                (m) => m.id === idToQuery || m.name.toLowerCase() === idToQuery.toLowerCase()
             )
 
             if (!menuItem) {
@@ -109,8 +138,8 @@ async function handlePlaceOrder(args: any, userId: string) {
                 id: menuItem.id,
                 name: menuItem.name,
                 price: menuItem.price,
-                quantity: orderItem.quantity,
-                customization: orderItem.customization || '',
+                quantity: norm(orderItem, 'quantity') || 1,
+                customization: norm(orderItem, 'customization') || '',
                 nutrition: menuItem.nutrition
             })
         }
@@ -123,6 +152,7 @@ async function handlePlaceOrder(args: any, userId: string) {
         }
 
         const total = validatedItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+        // ... (rest of logic same)
         const totalNutrition = validatedItems.reduce(
             (acc, item) => {
                 const nutrition = item.nutrition
@@ -144,8 +174,8 @@ async function handlePlaceOrder(args: any, userId: string) {
             items: validatedItems,
             total,
             nutrition: totalNutrition,
-            scheduledTime: args.scheduledTime || 'ASAP',
-            specialInstructions: args.specialInstructions || '',
+            scheduledTime,
+            specialInstructions,
             requiresConfirmation: true,
             confirmationMessage: `I've prepared an order for ${validatedItems.length} item(s) totaling ₹${total}. Would you like to add these to your cart?`
         }
@@ -161,8 +191,10 @@ async function handleCreateMealPlan(args: any, userId: string) {
         const { getUserPreferences, saveMealPlan } = await import('../firebase/ai-db-admin')
         const prefs = await getUserPreferences(userId)
 
-        const dietaryRestrictions = args.dietaryRestrictions || prefs?.dietary.restrictions || []
-        const mealTypes = args.mealTypes || ['breakfast', 'lunch', 'dinner']
+        const duration = norm(args, 'duration') || 'daily'
+        const startDateString = norm(args, 'startDate')
+        const dietaryRestrictions = norm(args, 'dietaryRestrictions') || prefs?.dietary.restrictions || []
+        const mealTypes = norm(args, 'mealTypes') || ['breakfast', 'lunch', 'dinner']
 
         const filteredItems = allItems.filter((item) => {
             if (!item.available) return false
@@ -191,14 +223,14 @@ async function handleCreateMealPlan(args: any, userId: string) {
         }
 
         const planMeals: any[] = []
-        const durationDays = args.duration === 'weekly' ? 7 : args.duration === 'monthly' ? 30 : 1
-        const startDate = new Date(args.startDate || new Date())
+        const durationDays = duration === 'weekly' ? 7 : duration === 'monthly' ? 30 : 1
+        const startDate = new Date(startDateString || new Date())
         const endDate = new Date(startDate)
         endDate.setDate(startDate.getDate() + durationDays - 1)
 
         const { saveMealPlan: savePlan, getUserPreferences: getPrefs } = await import('../firebase/ai-db-admin')
         const userPrefs = await getPrefs(userId)
-        const targetCalories = args.calorieTarget || (userPrefs?.health.targetWeight ? 1800 : 2200)
+        const targetCalories = norm(args, 'calorieTarget') || (userPrefs?.health.targetWeight ? 1800 : 2200)
 
         for (let day = 0; day < durationDays; day++) {
             for (const mealType of mealTypes) {
@@ -230,7 +262,7 @@ async function handleCreateMealPlan(args: any, userId: string) {
 
         const planId = await savePlan(userId, {
             userId,
-            type: args.duration,
+            type: duration,
             startDate: admin.firestore.Timestamp.fromDate(startDate),
             endDate: admin.firestore.Timestamp.fromDate(endDate),
             meals: planMeals.map((m, idx) => ({
@@ -248,7 +280,7 @@ async function handleCreateMealPlan(args: any, userId: string) {
             })),
             nutritionTargets: {
                 dailyCalories: targetCalories,
-                protein: 150,
+                protein: norm(args, 'proteinTarget') || 150,
                 carbs: 200,
                 fats: 60
             },
@@ -274,7 +306,7 @@ async function handleCreateMealPlan(args: any, userId: string) {
                 carbs: Math.round(totalCarbs / durationDays),
                 fats: Math.round(totalFats / durationDays)
             },
-            message: `I've created a ${args.duration} meal plan with ${planMeals.length} meals averaging ${Math.round(totalCalories / durationDays)} calories per day!`
+            message: `I've created a ${duration} meal plan with ${planMeals.length} meals averaging ${Math.round(totalCalories / durationDays)} calories per day!`
         }
     } catch (error) {
         console.error('Error in handleCreateMealPlan:', error)
@@ -285,7 +317,8 @@ async function handleCreateMealPlan(args: any, userId: string) {
 async function handleGetNutritionInfo(args: any) {
     try {
         const allItems = await getMenuItems()
-        const info = args.itemIds.map((id: string) => {
+        const itemIds = norm(args, 'itemIds') || []
+        const info = itemIds.map((id: string) => {
             const item = allItems.find((m) => m.id === id || m.name.toLowerCase() === id.toLowerCase())
             if (!item) return null
             return {
@@ -307,6 +340,7 @@ async function handleGetNutritionInfo(args: any) {
 async function handleAnalyzePatterns(args: any, userId: string) {
     try {
         const orders = await getOrdersByUserId(userId)
+        const timeRange = norm(args, 'timeRange') || 'month'
 
         if (orders.length === 0) {
             return {
@@ -332,11 +366,11 @@ async function handleAnalyzePatterns(args: any, userId: string) {
             .map(([name]) => name)
 
         return {
-            period: args.timeRange,
+            period: timeRange,
             totalOrders: orders.length,
             frequentItems,
             spending: totalSpending,
-            insight: `Based on your ${orders.length} orders, your most frequent choice is ${frequentItems[0] || 'none'}. You've spent ₹${totalSpending} this ${args.timeRange}.`
+            insight: `Based on your ${orders.length} orders, your most frequent choice is ${frequentItems[0] || 'none'}. You've spent ₹${totalSpending} this ${timeRange}.`
         }
     } catch (error) {
         console.error('Error in handleAnalyzePatterns:', error)
@@ -379,13 +413,14 @@ async function handleGetRecommendations(args: any, userId: string) {
             return true
         })
 
+        const contextParam = norm(args, 'context')
         const scored = filtered.map((item) => {
             let score = 0
 
             if (itemFrequency[item.id]) score += itemFrequency[item.id] * 10
 
-            if (args.context) {
-                const context = args.context.toLowerCase()
+            if (contextParam) {
+                const context = contextParam.toLowerCase()
                 const name = item.name.toLowerCase()
 
                 if (context === 'breakfast' && (name.includes('breakfast') || name.includes('oatmeal'))) score += 20
@@ -406,7 +441,7 @@ async function handleGetRecommendations(args: any, userId: string) {
 
         const recommended = scored
             .sort((a, b) => b.matchScore - a.matchScore)
-            .slice(0, args.maxItems || 5)
+            .slice(0, norm(args, 'maxItems') || 5)
             .map((item) => ({
                 id: item.id,
                 name: item.name,
@@ -422,7 +457,7 @@ async function handleGetRecommendations(args: any, userId: string) {
         const allItems = await getMenuItems()
         const fallback = allItems
             .filter((item) => item.available)
-            .slice(0, args.maxItems || 3)
+            .slice(0, norm(args, 'maxItems') || 3)
             .map((item) => ({
                 id: item.id,
                 name: item.name,
@@ -435,6 +470,7 @@ async function handleGetRecommendations(args: any, userId: string) {
 }
 
 async function handleForecastDemand(args: any, userId: string) {
+    const targetDate = norm(args, 'date')
     try {
         const { getAllOrders } = await import('../firebase/db')
         // For forecast, we analyze GLOBAL trends, not just user trends
@@ -443,7 +479,7 @@ async function handleForecastDemand(args: any, userId: string) {
 
         if (allOrders.length < 5) {
             return {
-                date: args.date,
+                date: targetDate,
                 predictedOrders: 0,
                 confidence: 0.3,
                 peakHours: [],
@@ -468,7 +504,7 @@ async function handleForecastDemand(args: any, userId: string) {
         const predictedOrders = Math.round(avgOrdersPerDay * (args.multiplier || 1.1)) // 10% growth assumption
 
         return {
-            date: args.date,
+            date: targetDate,
             predictedOrders,
             confidence: uniqueDays > 7 ? 0.8 : 0.5,
             peakHours,
@@ -477,7 +513,7 @@ async function handleForecastDemand(args: any, userId: string) {
     } catch (error) {
         console.error('Error in handleForecastDemand:', error)
         return {
-            date: args.date,
+            date: targetDate,
             predictedOrders: 0,
             confidence: 0,
             peakHours: [],
@@ -491,6 +527,7 @@ async function handleInventoryRecommendations(args: any, userId: string) {
         const allItems = await getMenuItems()
         const { getAllOrders } = await import('../firebase/db')
         const orders = await getAllOrders()
+        const forecastDays = norm(args, 'forecastDays') || 3
 
         const itemDemand: Record<string, number> = {}
         orders.forEach((order) => {
@@ -501,14 +538,14 @@ async function handleInventoryRecommendations(args: any, userId: string) {
 
         const recommendations = Object.entries(itemDemand)
             .sort((a, b) => b[1] - a[1])
-            .slice(0, args.forecastDays || 10)
+            .slice(0, 10)
             .map(([itemId, demand]) => {
                 const item = allItems.find((m) => m.id === itemId)
                 // Assuming "demand" is total historical. 
                 // We need daily rate.
                 const uniqueDays = new Set(orders.map(o => new Date(o.createdAt.toDate()).toDateString())).size || 1
                 const avgDailyDemand = demand / uniqueDays
-                const recommendedStock = Math.ceil(avgDailyDemand * (args.forecastDays || 3))
+                const recommendedStock = Math.ceil(avgDailyDemand * forecastDays)
 
                 return {
                     itemId,

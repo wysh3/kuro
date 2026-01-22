@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
                 content: result.message,
                 metadata: {
                     richContent: result.richContent || undefined,
-                    actions: result.actions || undefined
+                    actions: result.actions || undefined,
+                    buttons: result.buttons || undefined
                 }
             })
         ]);

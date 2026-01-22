@@ -348,24 +348,24 @@ export default function KuroPage() {
 
             case 'product_carousel':
                 return (
-                    <div className="mt-4 space-y-3 w-full">
+                    <div className="mt-4 space-y-3 w-full max-w-[calc(100vw-8rem)] sm:max-w-none">
                         <p className="text-[10px] text-white/40 uppercase tracking-[0.2em] font-black">Recommendations</p>
-                        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-none snap-x">
+                        <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-none snap-x -mx-2 px-2">
                             {content.data.recommendations.map((item: any) => (
                                 <motion.div
                                     key={item.id}
-                                    className="flex-shrink-0 w-64 p-5 rounded-[2rem] glass-panel border-white/10 bg-white/[0.02] snap-center hover:border-blue-500/30 transition-all border"
+                                    className="flex-shrink-0 w-72 p-6 rounded-[2.5rem] glass-panel border-white/10 bg-white/[0.02] snap-center hover:border-blue-500/30 transition-all border shadow-2xl"
                                 >
                                     <div className="flex justify-between items-start mb-2">
-                                        <h3 className="font-bold text-white text-sm line-clamp-1">{item.name}</h3>
-                                        <p className="text-blue-400 font-mono text-xs font-bold">₹{item.price}</p>
+                                        <h3 className="font-bold text-white text-base line-clamp-1">{item.name}</h3>
+                                        <p className="text-blue-400 font-mono text-sm font-bold">₹{item.price}</p>
                                     </div>
-                                    <p className="text-[10px] text-white/40 line-clamp-2 mb-4 h-8">{item.description || 'Recommended based on your preferences.'}</p>
+                                    <p className="text-xs text-white/40 line-clamp-2 mb-6 h-10">{item.description || 'Recommended based on your preferences.'}</p>
                                     <Button
                                         onClick={() => addToCart(item)}
-                                        className="w-full h-10 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-[10px] font-black text-white uppercase"
+                                        className="w-full h-12 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 text-xs font-black text-white uppercase tracking-widest"
                                     >
-                                        <Plus className="w-3 h-3 mr-2" /> Add to Order
+                                        <Plus className="w-4 h-4 mr-2" /> Add to Order
                                     </Button>
                                 </motion.div>
                             ))}
@@ -486,21 +486,23 @@ export default function KuroPage() {
                                         </div>
                                     )}
 
-                                    <div className="max-w-[85%] flex flex-col gap-2 scale-100 origin-bottom-left">
-                                        <div className={cn(
-                                            "px-7 py-5 rounded-[2.5rem] relative transition-all duration-500 text-sm overflow-hidden",
-                                            msg.role === 'user'
-                                                ? 'bg-white text-black font-black tracking-tight rounded-tr-sm shadow-[0_0_30px_rgba(255,255,255,0.1)]'
-                                                : 'glass-panel border-white/5 text-white/90 font-medium rounded-tl-sm bg-white/[0.02]'
-                                        )}>
-                                            {/* User Attachment Display */}
-                                            {msg.metadata?.attachments && (
-                                                <div className="mb-3 rounded-xl overflow-hidden shadow-lg border border-black/10">
-                                                    <img src={msg.metadata.attachments[0].url} alt="Uploaded" className="max-h-60 w-full object-cover" />
-                                                </div>
-                                            )}
-                                            <p className="leading-relaxed whitespace-pre-wrap">{msg.content || (msg.metadata?.attachments ? 'Sent an image' : '')}</p>
-                                        </div>
+                                    <div className="max-w-[95%] sm:max-w-[85%] flex flex-col gap-2 scale-100 origin-bottom-left">
+                                        {msg.content && (
+                                            <div className={cn(
+                                                "px-7 py-5 rounded-[2.5rem] relative transition-all duration-500 text-sm overflow-hidden",
+                                                msg.role === 'user'
+                                                    ? 'bg-white text-black font-black tracking-tight rounded-tr-sm'
+                                                    : 'glass-panel border-white/5 text-white/90 font-medium rounded-tl-sm bg-white/[0.02]'
+                                            )}>
+                                                {/* User Attachment Display */}
+                                                {msg.metadata?.attachments && (
+                                                    <div className="mb-3 rounded-xl overflow-hidden shadow-lg border border-black/10">
+                                                        <img src={msg.metadata.attachments[0].url} alt="Uploaded" className="max-h-60 w-full object-cover" />
+                                                    </div>
+                                                )}
+                                                <p className="leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                                            </div>
+                                        )}
 
                                         {/* Render Assistant Rich Content */}
                                         {msg.role === 'assistant' && msg.metadata?.richContent && (
@@ -608,8 +610,8 @@ export default function KuroPage() {
                             )}
                         </AnimatePresence>
 
-                        <div className="flex gap-4">
-                            <div className="flex-1 relative group bg-black/20 rounded-[2rem]"> {/* Wrapper for inputs */}
+                        <div className="flex items-center gap-4">
+                            <div className="flex-1 relative group bg-black/5 rounded-[2rem]">
                                 <input
                                     type="text"
                                     value={input}
@@ -622,7 +624,7 @@ export default function KuroPage() {
                                     placeholder={isListening ? "Listening..." : "TRANSMIT TO KURO..."}
                                     disabled={loading}
                                     className={cn(
-                                        "w-full h-16 sm:h-20 glass-panel border-white/5 rounded-[2rem] px-8 pl-20 sm:pl-24 text-sm font-black text-white placeholder-white/20 focus:outline-none focus:bg-white/[0.08] transition-all shadow-2xl tracking-widest uppercase",
+                                        "w-full h-16 sm:h-20 glass-panel border-white/5 rounded-[2.5rem] px-8 pr-32 text-sm font-black text-white placeholder-white/20 focus:outline-none focus:bg-white/[0.08] transition-all shadow-2xl tracking-widest uppercase",
                                         isListening && "border-red-500/50 animate-pulse"
                                     )}
                                 />
@@ -657,19 +659,19 @@ export default function KuroPage() {
                                 </div>
                             </div>
 
-                            <Button
+                            <button
                                 onClick={() => handleSendMessage(input)}
                                 disabled={loading || (!input.trim() && !attachment)}
-                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-[2.2rem] bg-white text-black hover:bg-white/90 hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all active:scale-95 flex items-center justify-center p-0 border-none group"
+                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-[2.5rem] bg-white text-black hover:bg-white/90 hover:shadow-[0_0_30px_rgba(255,255,255,0.3)] transition-all active:scale-95 flex items-center justify-center p-0 border-none group disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {loading ? (
                                     <div className="w-8 h-8 flex items-center justify-center">
-                                        <div className="w-5 h-5 border-2 border-white/10 border-t-white rounded-full animate-spin" />
+                                        <div className="w-5 h-5 border-2 border-black/10 border-t-black rounded-full animate-spin" />
                                     </div>
                                 ) : (
                                     <Send className="w-7 h-7 sm:w-8 sm:h-8 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform text-black" />
                                 )}
-                            </Button>
+                            </button>
                         </div>
                     </div>
                 </div>
